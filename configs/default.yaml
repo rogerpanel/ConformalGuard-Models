@@ -1,0 +1,66 @@
+# Top-level config for `python scripts/reproduce_results.py`.
+# Overrides any value set in encoder.yaml / conformal.yaml / adaptive.yaml.
+
+seed: 1234
+device: cuda            # auto-fallback to cpu
+
+dataset:
+  name: agentchain26
+  root: ~/.cache/conformalguard/agentchain26
+  synthetic_if_missing: true
+  splits:
+    train: train
+    val:   val
+    test:  test
+  limit_train: 9920     # 80 % of 12,400
+  limit_val:  1240      # 10 %
+  limit_test: 1240      # 10 %
+  n_calibration: 2000
+
+encoder:
+  d_model: 256
+  n_heads: 8
+  n_layers: 3
+  dropout: 0.1
+  time_dim: 64
+  feature_dim: 128
+  pool: mean+gru
+
+trainer:
+  lr: 5.0e-4
+  weight_decay: 0.01
+  epochs: 30
+  batch_size: 64
+  grad_clip: 1.0
+  coverage_weight: 0.1
+  output_dir: runs/conformalguard
+  log_every: 50
+
+conformal:
+  alpha: 0.05
+  score: neglogprob
+
+adaptive:
+  enabled: true
+  target_alpha: 0.05
+  gamma: 0.05
+  alpha_min: 1.0e-3
+  alpha_max: 0.5
+
+drift:
+  enabled: true
+  window: 512
+  alpha_drift: 0.01
+
+routing:
+  w_severity: 0.6
+  w_width:    0.2
+  w_drift:    0.2
+  priority_escalate: 0.7
+  priority_block:    0.9
+
+evaluation:
+  baselines: [LlamaGuard-2, WildGuard, CircuitBreakers, OpenAI-Moderation,
+              "ReAct + per-step filter", "GPT-4-as-judge", CT-DGNN-JailGuard]
+  latency_warmup: 50
+  report_path: runs/conformalguard/report.json

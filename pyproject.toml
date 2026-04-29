@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "conformalguard"
+version = "1.0.0"
+description = "Distribution-Free Safety Certification for Multi-Agent LLM Systems"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Roger Nick Anaedevha", email = "roger@robustidps.ai" },
+    { name = "Alexander Gennadievich Trofimov", email = "agtrofimov@robustidps.ai" }
+]
+requires-python = ">=3.10"
+dynamic = ["dependencies"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "ruff>=0.4",
+    "mypy>=1.8",
+]
+agents = [
+    "pyautogen>=0.2",
+    "metagpt>=0.8",
+    "langgraph>=0.0.40",
+    "crewai>=0.30",
+]
+
+[project.scripts]
+conformalguard-train     = "conformalguard.cli:train"
+conformalguard-calibrate = "conformalguard.cli:calibrate"
+conformalguard-eval      = "conformalguard.cli:evaluate"
+conformalguard-serve     = "conformalguard.cli:serve"
+
+[tool.setuptools.packages.find]
+include = ["conformalguard*"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

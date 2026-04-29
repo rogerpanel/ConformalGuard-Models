@@ -1,0 +1,21 @@
+# RobustIDPS.ai integration config.
+
+server:
+  host: 0.0.0.0
+  port: 8088
+
+runtime:
+  checkpoint: runs/conformalguard/model.pt
+  device: auto
+
+routing:
+  w_severity: 0.6
+  w_width:    0.2
+  w_drift:    0.2
+  priority_escalate: 0.7
+  priority_block:    0.9
+
+robustidps:
+  api_base: https://robustidps.ai/api
+  agent_layer_plugin: integrated_ai_ids.plugins.conformalguard
+  websocket_topic: agent.safety.events

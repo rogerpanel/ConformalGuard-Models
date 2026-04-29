@@ -1,0 +1,18 @@
+# Split-conformal calibration config.
+
+calibration:
+  n_calibration: 2000          # paper default
+  alpha: 0.05                  # 95 % marginal coverage
+  score: neglogprob            # nonconformity score
+
+dataset:
+  name: agentchain26
+  split: val                   # held-out split used for calibration
+  synthetic_if_missing: true
+
+input:
+  checkpoint: runs/conformalguard/model.pt
+
+output:
+  threshold_path: runs/conformalguard/threshold.json
+  scores_path:    runs/conformalguard/cal_scores.npy
