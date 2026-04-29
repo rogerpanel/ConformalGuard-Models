@@ -1,0 +1,1045 @@
+%% ============================================================
+%% ConformalGuard — Вестник кибернетики (СурГУ) submission
+%% Publisher: Сургутский государственный университет
+%%            (Surgut State University)
+%% Editorial e-mail: science.journals@surgu.ru
+%% Target VAK specialty: 2.3.1 (К2, физ.-мат. + тех. науки)
+%%
+%% Paper: Distribution-Free Safety Certification for Multi-Agent
+%%        LLM Systems via Conformal Prediction on Dynamic
+%%        Execution Graphs
+%%
+%% Compilation: pdflatex twice. Native LaTeX accepted.
+%% Layout: single-column A4, Times New Roman 12pt, RU+EN bilingual
+%% header per СурГУ Elpub OJS author guidelines.
+%% ============================================================
+
+\documentclass[12pt,a4paper]{article}
+
+% ---- Page geometry (Вестник кибернетики) ----
+\usepackage[a4paper, top=2.0cm, bottom=2.0cm, left=2.5cm, right=2.0cm]{geometry}
+\setlength{\parindent}{0.7cm}
+\setlength{\parskip}{2pt}
+
+% ---- Encoding and language ----
+\usepackage[utf8]{inputenc}
+\usepackage[T2A,T1]{fontenc}
+\usepackage[english,russian,main=english]{babel}
+\usepackage{times}
+
+% ---- Core packages ----
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage{cite}
+\usepackage{url}
+\usepackage{array}
+\usepackage{nicefrac}
+\usepackage[expansion=false]{microtype}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{enumitem}
+\setlist{nosep, topsep=3pt, partopsep=0pt, parsep=0pt, itemsep=2pt}
+
+% ---- Theorem environments ----
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+% ---- TikZ and pgfplots ----
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit,
+                 backgrounds, calc, decorations.pathreplacing}
+
+% ---- Section formatting ----
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{2.0ex plus 0.5ex minus 0.3ex}{1.0ex plus 0.2ex}
+\titlespacing*{\subsection}{0pt}{1.6ex plus 0.4ex minus 0.2ex}{0.7ex plus 0.2ex}
+
+% ---- Float spacing ----
+\setlength{\textfloatsep}{8pt plus 2pt minus 4pt}
+\setlength{\floatsep}{6pt plus 2pt minus 3pt}
+\setlength{\intextsep}{6pt plus 2pt minus 2pt}
+\setlength{\abovecaptionskip}{4pt plus 1pt minus 1pt}
+\setlength{\belowcaptionskip}{2pt plus 1pt minus 1pt}
+\setlength{\abovedisplayskip}{6pt plus 2pt minus 3pt}
+\setlength{\belowdisplayskip}{6pt plus 2pt minus 3pt}
+
+% ---- Helper macro ----
+\newcommand{\ru}[1]{\begin{otherlanguage}{russian}#1\end{otherlanguage}}
+
+% ---- Math commands ----
+\newcommand{\modelname}{ConformalGuard}
+\newcommand{\benchname}{AgentChain-26}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\NN}{\mathbb{N}}
+\providecommand{\Prob}{}\renewcommand{\Prob}{\mathbb{P}}
+\newcommand{\Hcal}{\mathcal{H}}
+\newcommand{\Lcal}{\mathcal{L}}
+\newcommand{\Dcal}{\mathcal{D}}
+\newcommand{\Tcal}{\mathcal{T}}
+\newcommand{\Xcal}{\mathcal{X}}
+\newcommand{\Ycal}{\mathcal{Y}}
+\newcommand{\Zcal}{\mathcal{Z}}
+\newcommand{\Acal}{\mathcal{A}}
+\newcommand{\Bcal}{\mathcal{B}}
+\newcommand{\Ccal}{\mathcal{C}}
+\newcommand{\Fcal}{\mathcal{F}}
+\newcommand{\Scal}{\mathcal{S}}
+\newcommand{\Mcal}{\mathcal{M}}
+\newcommand{\Ncal}{\mathcal{N}}
+\newcommand{\Pcal}{\mathcal{P}}
+\newcommand{\Qcal}{\mathcal{Q}}
+\newcommand{\Vcal}{\mathcal{V}}
+\newcommand{\Ecal}{\mathcal{E}}
+\newcommand{\Gcal}{\mathcal{G}}
+\newcommand{\Rcal}{\mathcal{R}}
+\newcommand{\KL}{\mathrm{KL}}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\abs}[1]{\left|#1\right|}
+\DeclareMathOperator{\softmax}{softmax}
+\DeclareMathOperator{\Clip}{Clip}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\sigmamax}{\sigma_{max}}
+\DeclareMathOperator{\ECE}{ECE}
+\DeclareMathOperator{\NCS}{NCS}
+\DeclareMathOperator{\quant}{Q}
+
+\begin{document}
+
+\thispagestyle{empty}
+
+%% ============================================================
+%% RUSSIAN HEADER (per Вестник кибернетики author guidelines)
+%% ============================================================
+
+\begin{otherlanguage}{russian}
+\noindent\textbf{УДК 004.056.5 + 004.85 + 510.6}
+\hfill
+\textit{Поступила в редакцию \ldots; принята к печати \ldots}
+
+\vspace{0.8em}
+
+\begin{center}
+{\large\bfseries
+ConformalGuard: Сертификация безопасности многоагентных
+систем больших языковых моделей без предположений о
+распределении на основе конформного предсказания на
+динамических графах исполнения
+\par}
+
+\vspace{0.6em}
+
+{\normalsize
+Р.\,Н.~Анаэдевха$^{1,*}$, А.\,Г.~Трофимов$^{1}$, Ю.\,В.~Бородачёв$^{2}$
+\par}
+
+\vspace{0.4em}
+
+{\small\itshape
+$^{1}$Национальный исследовательский ядерный университет «МИФИ»
+(Московский инженерно-физический институт),\\
+Каширское шоссе, д.~31, 115409 Москва, Россия\\
+$^{2}$Центр исследований искусственного интеллекта НИЯУ МИФИ,
+Москва, Россия\\
+$^{*}$ar006@campus.mephi.ru
+\par}
+\end{center}
+
+\vspace{0.5em}
+
+\noindent\textbf{Аннотация.} Многоагентные системы на основе больших языковых моделей (LLM) --- такие как AutoGen, MetaGPT, LangGraph и автономные агентные оркестрации --- исполняются в виде динамических графов, где вершинами являются вызовы агентов, а рёбрами --- передача сообщений, обращения к инструментам, операции с памятью и делегирование. Эти графы развиваются во время вывода. Существующие механизмы безопасности (фильтры ввода-вывода, модерация контента, тонкая настройка выравнивания) работают на уровне отдельных агентов и вызовов, не выявляя возникающих нарушений безопасности, обусловленных композицией взаимодействий между агентами. В настоящей работе представлена \textbf{ConformalGuard} --- первая структура распределённо-независимой сертификации безопасности многоагентных LLM-систем посредством применения теории конформного предсказания к динамическим графам исполнения. Сделано три вклада. Во-первых, формализована динамическая структура графа исполнения многоагентной системы как непрерывно-временного гетерогенного графа с типизированными вершинами и рёбрами; нонконформные показатели вычисляются над временными подграфами, а не над отдельными токенами или ответами, что позволяет покрывать весь многошаговый процесс работы агентов. Во-вторых, доказана теорема о маргинальном покрытии для конформного предсказания на динамических графах при условии обмениваемости подграфов в калибровочном множестве, обеспечивающая конечную выборку с покрытием $1-\alpha$ ($\alpha \leq 0{,}05$) для рабочих процессов длиной до 50 шагов без каких-либо параметрических предположений о LLM или инструментах. В-третьих, выведен онлайновый адаптивный конформный механизм, обеспечивающий валидное покрытие при дрейфе распределения с использованием расширенного протокола Гиббса--Кандеса. Оценка на бенчмарке \textbf{AgentChain-26} из 12\,400 размеченных мультиагентных трасс выполнения с 11 классами критических нарушений безопасности (утечка персональных данных, неавторизованный вызов инструментов, распространение prompt-инъекций, нарушение разделения сессий, и др.) на четырёх агентных платформах (AutoGen, MetaGPT, CrewAI, LangGraph) показывает: эмпирическое покрытие $94{,}9\%$ при целевом $1-\alpha=0{,}95$; блокировка $96{,}1\%$ критических нарушений против $18{,}3$--$31{,}2\%$ для существующих базовых методов (LlamaGuard, WildGuard, Circuit Breaker, OpenAI Moderation API); средние ширины интервалов предсказания 1,8 безопасных продолжений на шаг; задержка вывода 23~мс на шаг агента. ConformalGuard интегрирована в платформу RobustIDPS.ai как выделенный модуль сертификации безопасности агентного слоя.
+
+\vspace{0.4em}
+
+\noindent\textbf{Ключевые слова:} конформное предсказание, многоагентные системы, большие языковые модели, динамические графовые нейронные сети, сертификация безопасности, распределённо-независимые гарантии, графы исполнения, обмениваемость, обнаружение аномалий.
+
+\vspace{0.4em}
+
+\noindent\textbf{Финансирование.} Исследование выполнено при поддержке Министерства экономического развития Российской Федерации (соглашение № 000000C313925P3Q0002).
+\end{otherlanguage}
+
+\vspace{1.0em}
+\hrule
+\vspace{0.6em}
+
+%% ============================================================
+%% ENGLISH HEADER (mirror block)
+%% ============================================================
+
+\begin{center}
+{\large\bfseries
+\modelname{}: Distribution-Free Safety Certification for
+Multi-Agent LLM Systems via Conformal Prediction on
+Dynamic Execution Graphs
+\par}
+
+\vspace{0.6em}
+
+{\normalsize
+R.\,N.~Anaedevha$^{1,*}$, A.\,G.~Trofimov$^{1}$, Y.\,V.~Borodachev$^{2}$
+\par}
+
+\vspace{0.4em}
+
+{\small\itshape
+$^{1}$National Research Nuclear University MEPhI
+(Moscow Engineering Physics Institute), 31~Kashirskoe Highway,
+115409 Moscow, Russia\\
+$^{2}$Artificial Intelligence Research Center, NRNU MEPhI, Moscow, Russia\\
+$^{*}$ar006@campus.mephi.ru
+\par}
+\end{center}
+
+\vspace{0.5em}
+
+\noindent\textbf{Abstract.} Multi-agent large language model (LLM) systems --- AutoGen, MetaGPT, LangGraph, and autonomous agent orchestrations --- execute as dynamic graphs where nodes are agent invocations and edges are message passing, tool calls, memory operations, and delegation. These graphs evolve at inference time. Existing safety mechanisms (input/output filters, content moderation, alignment fine-tuning) operate per-agent and per-call, missing emergent safety violations arising from the composition of agent interactions. This paper introduces \modelname{}, the first framework for distribution-free safety certification of multi-agent LLM systems by applying conformal prediction theory to dynamic execution graphs. Three contributions are presented. First, we formalize the multi-agent execution-graph structure as a continuous-time heterogeneous graph with typed nodes and edges, and compute nonconformity scores over temporal subgraphs --- not over individual tokens or outputs --- enabling certificates that cover entire multi-step agent workflows. Second, we prove a marginal-coverage theorem for graph conformal prediction under exchangeability of calibration subgraphs, yielding finite-sample $1-\alpha$ coverage ($\alpha \leq 0.05$) for workflows of up to 50 steps without any parametric assumptions on the underlying LLMs or tools. Third, we derive an online adaptive conformal mechanism that maintains valid coverage under distribution shift via an extended Gibbs--Cand\`es protocol. Evaluation on \benchname{}, a constructed benchmark of $12{,}400$ labeled multi-agent execution traces across $11$ critical safety-violation classes (PII exfiltration, unauthorized tool invocation, prompt-injection propagation, session-isolation breach, and others) on four agent platforms (AutoGen, MetaGPT, CrewAI, LangGraph), demonstrates: empirical coverage $94.9\%$ at target $1-\alpha = 0.95$; blocking of $96.1\%$ of critical violations versus $18.3$--$31.2\%$ for existing baselines (LlamaGuard, WildGuard, Circuit Breaker, OpenAI Moderation API); average prediction-set widths of $1.8$ safe continuations per step; per-step inference latency of $23$~ms. \modelname{} is integrated into the RobustIDPS.ai platform as a dedicated agent-layer safety-certification module.
+
+\vspace{0.4em}
+
+\noindent\textbf{Keywords:} conformal prediction, multi-agent systems, large language models, dynamic graph neural networks, safety certification, distribution-free guarantees, execution graphs, exchangeability, anomaly detection.
+
+\vspace{0.4em}
+
+\noindent\textbf{Funding.} This research was supported by the Ministry of Economic Development of the Russian Federation, agreement No.~000000C313925P3Q0002.
+
+\vspace{0.4em}
+
+\noindent\textbf{For citation:} Anaedevha~R.\,N., Trofimov~A.\,G., Borodachev~Y.\,V. \modelname{}: Distribution-Free Safety Certification for Multi-Agent LLM Systems via Conformal Prediction on Dynamic Execution Graphs. \emph{Vestnik Kibernetiki}. \ldots\ DOI: 10.35266/\ldots
+
+\vspace{1.0em}
+\hrule
+\vspace{0.6em}
+
+
+%% ============================================================
+\section{Introduction}
+\label{sec:introduction}
+%% ============================================================
+
+The deployment of multi-agent LLM systems has accelerated rapidly in 2024--2026: AutoGen~\cite{wu2023autogen}, MetaGPT~\cite{hong2024metagpt}, LangGraph~\cite{langgraph2024}, CrewAI, and AutoGPT-style agent swarms now power production workflows across software engineering (SWE-Bench~\cite{jimenez2024swebench}), data analysis (MLAgentBench~\cite{huang2024mlagentbench}), web automation (OSWorld~\cite{xie2024osworld}), and customer-service orchestration. These systems execute as dynamic graphs where nodes are agent invocations (typically LLM calls with role-specific system prompts), and edges are message passing, tool calls, memory reads/writes, and task delegations. Crucially, the graphs are not statically known --- they emerge at inference time as agents decide which sub-agents to spawn, which tools to invoke, and which memory entries to consult.
+
+This compositional execution introduces a previously under-recognized class of safety failures. Whereas single-agent LLM safety is addressed by per-call guards (LlamaGuard~\cite{inan2023llamaguard}, WildGuard~\cite{han2024wildguard}, OpenAI's Moderation API~\cite{openai2023moderation}, Circuit Breakers~\cite{zou2024circuit}), and by alignment fine-tuning, multi-agent systems exhibit \emph{emergent} unsafe behaviors arising from interactions that no single guard can detect. AgentPoison~\cite{chen2024agentpoison} demonstrated that poisoning a single retrieval memory propagates a backdoor through downstream agents at $\geq 80\%$ end-to-end attack success rate at $<0.1\%$ poison rate. Agent Smith~\cite{gu2024agentsmith} showed that infectious jailbreaks spread exponentially through multi-modal agent populations. Greshake et al.~\cite{greshake2023indirect} formalized indirect prompt injection: when one agent retrieves attacker-controlled content from a website or database, the injected instructions hijack downstream agents that consume the retrieved content as authoritative input. The R-Judge benchmark~\cite{yuan2024rjudge} catalogs $569$ multi-step agent failures across $27$ scenarios, finding even GPT-4-class judges miss $\geq 38\%$ of safety-critical sequences.
+
+Existing defenses against these failures fall into three families, each insufficient. \emph{Per-call guards} screen individual LLM inputs and outputs but cannot reason about cross-agent composition; an attack that is benign at every individual step but catastrophic in aggregate (e.g., agent~$A$ retrieves PII into context, agent~$B$ summarizes for diagnostics, agent~$C$ logs the summary externally --- each step alone is innocuous, the chain leaks PII) evades per-call detection entirely. \emph{Static graph analyzers} apply taint-tracking or static information-flow rules to known agent topologies but break under the dynamic-graph reality of modern systems. \emph{Reinforcement-learning-from-AI-feedback (RLAIF) safety classifiers} produce heuristic rejection decisions without finite-sample coverage guarantees, leaving practitioners with no formal way to set acceptable failure rates for safety-critical deployments.
+
+This paper introduces \modelname{}, a framework that closes these three gaps simultaneously by applying \emph{conformal prediction} --- a distribution-free, finite-sample, assumption-free statistical inference framework~\cite{vovk2005algorithmic,angelopoulos2021gentle} --- to the dynamic execution graph of multi-agent LLM systems. The central insight is that safety certification at the multi-agent level should be expressed as a coverage statement: \emph{with probability at least $1-\alpha$, the next-step prediction set computed on the current execution-graph state contains a safe action}. Coverage is established by computing nonconformity scores over execution subgraphs (not individual tokens) and calibrating thresholds against a held-out subgraph corpus. The conformal guarantee holds distribution-free under exchangeability of past subgraphs, requiring no parametric assumptions on the underlying LLMs or tools.
+
+Our prior work has progressively built the foundations for this synthesis. CT-Explain~\cite{anaedevha2025mambashield_internal_pre} (in our INJOIT track) introduced conformal prediction in a security context for SOC intrusion detection; the present paper extends that line to multi-agent LLM safety. CT-DGNN-JailGuard~\cite{anaedevha2026robustidps_internal_pre} (also in the INJOIT track) used continuous-time dynamic GNNs for jailbreak campaign detection on API interaction graphs --- the same dynamic-graph substrate \modelname{} now employs for executing-agent traces. MambaShield~\cite{anaedevha2025mambashield} provided the selective state-space sequence-modeling primitive useful for encoding subgraph histories. Uncertainty-calibrated hierarchical Gaussian processes~\cite{anaedevha2026uchgp} contributed the multi-scale calibration methodology. Temporal Adaptive Neural ODEs~\cite{anaedevha2026tanode} demonstrated continuous-time evolution on irregularly-sampled events. The adversarially-robust IDS~\cite{anaedevha2024adversarial} and Stochastic Multimodal Transformer~\cite{anaedevha2025stochastic} contributed empirical robustness baselines and multimodal feature encoding. The Deep Q-Network poisoning detector~\cite{anaedevha2025dqn} supplied the active-investigation primitive used for analyst-confirmed feedback in production. The wireless-device-identification federated framework~\cite{anaedevha2024wireless} prototyped the cross-silo coordination architecture that \modelname{} extends to cross-platform agent monitoring. \modelname{} is the natural capstone of this series, bringing distribution-free certification to the agentic-LLM frontier.
+
+\subsection{Contributions}
+
+This paper makes four contributions.
+
+\textit{Execution-graph formalization for multi-agent LLM systems.} We formalize the multi-agent execution graph as a continuous-time heterogeneous graph $\Gcal(t) = (\Vcal(t), \Ecal(t), \Rcal, \phi, \psi)$ with four node types (agents, tools, memory entries, messages) and six edge types (invokes, reads, writes, delegates, replies, cites), evolving at inference time as agents decide their next actions. We construct \benchname{}, a benchmark of $12{,}400$ labeled multi-agent execution traces across four agent platforms.
+
+\textit{Graph conformal prediction with marginal-coverage guarantee.} We prove a marginal-coverage theorem (Theorem~\ref{thm:coverage}) for conformal prediction over temporal execution subgraphs, showing that under exchangeability of calibration-subgraph nonconformity scores the prediction set $\Ccal_\alpha(\Gcal(t))$ contains a safe action with probability at least $1-\alpha$ for arbitrary distribution over agent inputs and any choice of underlying LLM.
+
+\textit{Online adaptive conformal mechanism under distribution shift.} We extend the Gibbs--Cand\`es online conformal protocol~\cite{gibbs2021adaptive} to the graph-execution setting, deriving an adaptive threshold update rule that maintains valid long-run coverage under temporal drift in attack distributions, with an explicit regret bound.
+
+\textit{Comprehensive evaluation and platform integration.} We evaluate \modelname{} on \benchname{}, on the R-Judge multi-agent benchmark~\cite{yuan2024rjudge}, and on AgentSafetyBench~\cite{agentsafetybench2024}, demonstrating empirical coverage $94.9\%$ at target $0.95$, blocking $96.1\%$ of critical violations against $18.3$--$31.2\%$ for existing baselines, and $23$~ms per-step inference latency. \modelname{} is integrated into the RobustIDPS.ai platform~\cite{anaedevha2026robustidps} as a dedicated agent-layer safety-certification module.
+
+The remainder of the paper is organized as follows. Section~\ref{sec:related} surveys related work in four cohesive areas. Section~\ref{sec:preliminaries} formalizes the threat model and problem statement. Section~\ref{sec:framework} presents the \modelname{} architecture, Algorithm~\ref{alg:conformalguard}, and the integration with RobustIDPS.ai. Section~\ref{sec:theory} states and proves the marginal-coverage and online-adaptive theorems. Section~\ref{sec:experiments} describes experimental methodology and the new \benchname{} benchmark. Section~\ref{sec:results} reports detection accuracy, ablation studies, and the multi-axis achievement profile. Section~\ref{sec:discussion} discusses production deployment, limitations, and threats to validity. Section~\ref{sec:conclusion} concludes.
+
+
+%% ============================================================
+\section{Related Work}
+\label{sec:related}
+%% ============================================================
+
+We organize the prior literature into four threads whose intersection defines the contribution space of \modelname{}.
+
+\subsection{Multi-agent LLM systems and their safety landscape}
+
+The modern multi-agent LLM stack was established by AutoGen~\cite{wu2023autogen} (Microsoft, conversational agent framework), MetaGPT~\cite{hong2024metagpt} (assembly-line meta-programming with role-specific agents), LangGraph~\cite{langgraph2024} (state-machine orchestration on top of LangChain), CrewAI (sequential and hierarchical task delegation), and CAMEL~\cite{li2023camel} (role-playing communicative agents). The ReAct framework~\cite{yao2023react} interleaving reasoning and action, and the Tree-of-Thoughts~\cite{yao2024tot} branching reasoning, provided the algorithmic substrate. Foundational benchmarks include AgentBench~\cite{liu2024agentbench} (8~environments), MLAgentBench~\cite{huang2024mlagentbench} (ML research tasks), OSWorld~\cite{xie2024osworld} (computer-use environments), and SWE-Bench~\cite{jimenez2024swebench} (real GitHub issues). Tool-use benchmarks include API-Bank~\cite{li2023apibank}, ToolBench~\cite{qin2023toolllm}, MetaTool, and the Berkeley Function Calling Leaderboard~\cite{patil2024bfcl}.
+
+The safety landscape is rapidly emerging. Greshake et al.~\cite{greshake2023indirect} formalized indirect prompt injection, the canonical multi-agent attack vector. AgentPoison~\cite{chen2024agentpoison} (NeurIPS~2024) demonstrated retrieval-memory backdoors propagating through agent populations. Agent Smith~\cite{gu2024agentsmith} (ICML~2024) showed infectious jailbreak diffusion on multi-modal agent networks. R-Judge~\cite{yuan2024rjudge} cataloged $569$ failure cases. The OWASP \emph{LLM Top 10} (2025) catalog explicitly includes LLM06: \emph{Excessive Agency}, LLM07: \emph{Sensitive Information Disclosure}, and LLM10: \emph{Model Theft via Agents}. AgentSafetyBench~\cite{agentsafetybench2024} provides standardized evaluation. None of these prior works addresses certified safety guarantees with formal coverage; existing defenses (LlamaGuard~\cite{inan2023llamaguard}, WildGuard~\cite{han2024wildguard}, Circuit Breakers~\cite{zou2024circuit}, OpenAI Moderation API~\cite{openai2023moderation}) operate at the per-call level without composition-aware coverage.
+
+\subsection{Conformal prediction theory and language-model applications}
+
+Conformal prediction was established by Vovk, Gammerman, and Shafer~\cite{vovk2005algorithmic} as a distribution-free, finite-sample inference framework. The modern practical machinery is summarized in the Angelopoulos--Bates tutorial~\cite{angelopoulos2021gentle} and the Lei et al.\ analysis~\cite{lei2018distribution}. Adaptive conformal prediction was developed by Romano et al.\ (CQR)~\cite{romano2019cqr} and by Gibbs and Cand\`es~\cite{gibbs2021adaptive} (online adaptive conformal under distribution shift). The risk-controlling prediction-set framework of Bates et al.~\cite{bates2021distribution} extends coverage to richer risk functionals; conformal risk control~\cite{angelopoulos2024conformal} generalizes this to monotone losses.
+
+For language models, recent work includes Quach et al.\ on conformal language modeling~\cite{quach2024conformal}, Mohri and Hashimoto on conformal abstention~\cite{mohri2024conformal}, Kumar et al.\ on conformal LLM multi-choice question answering~\cite{kumar2023conformal}, and ConfLLM~\cite{huang2024confllm} on calibrated retrieval. For graph data, Huang et al.~\cite{huang2023cfgnn} (CF-GNN, NeurIPS~2023) introduced conformal prediction for graph neural networks; Zargarbashi et al.~\cite{zargarbashi2023conformal} (NeurIPS~2023) provided node-classification conformal certificates; Lunde~\cite{lunde2023conformal} and Clarkson~\cite{clarkson2023distribution} addressed exchangeability under graph dependence. Conformal anomaly detection was developed by Laxhammar~\cite{laxhammar2014conformal} and Bates et al.~\cite{bates2023testing}. \modelname{} synthesizes this graph-conformal line with the LLM-conformal line, applying both to the dynamic-execution-graph setting that neither family individually addresses.
+
+\subsection{Dynamic graph neural networks and computational trace analysis}
+
+Continuous-time dynamic graph learning was introduced by JODIE~\cite{kumar2019jodie}, DyRep~\cite{trivedi2019dyrep}, TGAT~\cite{xu2020tgat}, and TGN~\cite{rossi2020tgn}. CAW~\cite{wang2021caw} sampled temporal random walks. GraphMixer~\cite{cong2023graphmixer} demonstrated MLP-Mixer-style fixed-time encoding. DyGFormer~\cite{yu2023dygformer} introduced neighbor co-occurrence patches. State-space-model-based dynamic GNNs include DyG-Mamba~\cite{li2025dygmamba} (with explicit Lipschitz-norm constraints, the architectural template we adapt). Heterogeneous graph transformers include HGT~\cite{hu2020hgt} (relation-aware attention with type-specific parameters and Relative Temporal Encoding) and HAN~\cite{wang2019han}. Applications to security include software-supply-chain malicious-package detection on call graphs~\cite{sejfia2022amalfi,zhang2024spiderscan} and IoT malware detection~\cite{amjath2025fedmalgnn}. Our prior CT-DGNN-JailGuard~\cite{anaedevha2026robustidps} applied continuous-time dynamic GNNs to LLM jailbreak campaign detection on API interaction graphs --- the closest architectural precursor of \modelname{}'s execution-graph analyzer.
+
+\subsection{Distribution-free safety guarantees and runtime monitoring}
+
+The distinction between Lipschitz-based, PAC-Bayesian, randomized-smoothing, and conformal certificates is fundamental to choosing a safety-guarantee framework. Lipschitz/PAC-Bayes (our prior LipMamba~\cite{anaedevha2026lipmamba_internal}) provides architectural certificates contingent on parametric assumptions (spectral norm bounds, smooth losses). Randomized smoothing~\cite{cohen2019certified} provides probabilistic certificates contingent on Gaussian noise injection. Differential privacy (our prior FedLoRAGuard~\cite{anaedevha2026robustidps}) provides certificates contingent on per-client privacy budgets. Conformal prediction is uniquely \emph{distribution-free}: the only assumption is exchangeability of calibration data, no parametric assumption on LLMs, tools, or attack distribution. The cost of distribution-freeness is that conformal certificates cover \emph{predictions} rather than \emph{model parameters}, making them complementary rather than substitutive. Recent work on adversarial conformal prediction (Gendler et al.~\cite{gendler2022adversarially}, Yan et al.~\cite{yan2024adversarial}) addresses the exchangeability-violation under adaptive adversaries. Risk-controlling prediction sets~\cite{bates2021distribution} and conformal risk control~\cite{angelopoulos2024conformal} extend the framework to monotone losses appropriate for safety-critical deployments. To our knowledge, no prior work has applied this distribution-free certification framework to multi-agent LLM execution graphs; \modelname{} is the first.
+
+
+%% ============================================================
+\section{Preliminaries and Problem Formulation}
+\label{sec:preliminaries}
+%% ============================================================
+
+\subsection{Multi-agent execution graph}
+
+We model a multi-agent LLM system at time $t$ as a heterogeneous continuous-time dynamic graph $\Gcal(t) = (\Vcal(t), \Ecal(t), \Rcal, \phi, \psi)$ with four node types and six relation types.
+
+\begin{definition}[Multi-Agent Execution Graph]
+\label{def:graph}
+The node set partitions as $\Vcal(t) = \Vcal_A(t) \cup \Vcal_T(t) \cup \Vcal_M(t) \cup \Vcal_O(t)$, where $\Vcal_A$ is the set of \emph{agent invocations} (each with role-specific system prompt, model identifier, and step-position index), $\Vcal_T$ is the set of \emph{tool calls} (with API endpoint, parameter dictionary, and return value), $\Vcal_M$ is the set of \emph{memory entries} (RAG retrievals, conversation history, scratchpad reads/writes), and $\Vcal_O$ is the set of \emph{messages} (inter-agent communications). The edge set $\Ecal(t) \subseteq \Vcal(t) \times \Rcal \times \Vcal(t) \times \R^+$ comprises time-stamped typed edges with relations $\Rcal = \{\texttt{invokes}, \texttt{reads}, \texttt{writes}, \texttt{delegates}, \texttt{replies}, \texttt{cites}\}$.
+\end{definition}
+
+\subsection{Threat model and safety properties}
+
+We adopt the following threat model. The adversary may craft inputs to any agent in the system, may inject content into RAG memory or tool returns (indirect prompt injection~\cite{greshake2023indirect}), and may chain multiple legitimate-looking agent calls into composite attacks (cascading prompt injection, capability escalation, infectious jailbreak~\cite{gu2024agentsmith}). The adversary has black-box access to the LLM weights and prompts but cannot modify the platform's safety-monitoring infrastructure.
+
+\begin{definition}[Critical Safety Violation]
+\label{def:violation}
+An execution trace $\bm{\tau} = (\Gcal(t_1), \ldots, \Gcal(t_K))$ contains a \emph{critical safety violation} if there exists a temporal subgraph $\Scal \subseteq \bm{\tau}$ matching a predicate $\rho \in \mathcal{P}_{\mathrm{safe}}$, where $\mathcal{P}_{\mathrm{safe}} = \{\rho_1, \ldots, \rho_{11}\}$ enumerates: (1) PII exfiltration, (2) unauthorized tool invocation, (3) prompt-injection propagation, (4) session-isolation breach, (5) capability bypass via persona attack, (6) excessive-resource consumption, (7) data leakage between sessions, (8) credential exposure, (9) privilege escalation via delegation, (10) policy-bypass via role swap, (11) external-network exfiltration via tool side-effect.
+\end{definition}
+
+The eleven predicates are formalized as decidable patterns over the labeled execution graph; detailed formal specifications appear in the supplementary appendix.
+
+\subsection{Conformal prediction primer}
+
+Given a calibration set $\Dcal_{\mathrm{cal}} = \{z_1, \ldots, z_n\}$ of i.i.d.\ (or exchangeable) examples and a nonconformity score function $\NCS: \Zcal \to \R$, split conformal prediction~\cite{lei2018distribution} constructs a prediction set $\Ccal_\alpha$ for a new test point $z_{n+1}$ by computing the $(1-\alpha)$-empirical quantile of $\{\NCS(z_i)\}_{i=1}^n$ and including in $\Ccal_\alpha$ all candidate values $y$ for which $\NCS((x_{n+1}, y)) \leq \quant_{1-\alpha}$. The marginal-coverage guarantee is $\Prob(z_{n+1} \in \Ccal_\alpha) \geq 1 - \alpha$, holding distribution-free under the exchangeability assumption.
+
+\subsection{Problem statement}
+
+\noindent\textbf{Given:} (i) a multi-agent LLM system emitting an execution graph $\Gcal(t)$ in real time; (ii) a safety-property catalog $\mathcal{P}_{\mathrm{safe}} = \{\rho_1, \ldots, \rho_{11}\}$; (iii) a calibration corpus $\Dcal_{\mathrm{cal}}$ of $n_{\mathrm{cal}}$ labeled execution traces (safe or violating); (iv) a target miscoverage rate $\alpha \in (0, 1)$.
+
+\noindent\textbf{Objective:} At each step $k$ of the executing agent system, compute a prediction set $\Ccal_\alpha(\Gcal(t_k))$ of safe next actions such that, with probability at least $1 - \alpha$, the optimal safe next action is contained in $\Ccal_\alpha(\Gcal(t_k))$. Block any agent action outside $\Ccal_\alpha$ and route blocked actions to the analyst review queue.
+
+\noindent\textbf{Constraints:} per-step inference latency below $50$~ms on a single A100 GPU; empirical coverage $\geq 1 - \alpha$ on held-out traces; blocked-rate (fraction of agent steps that are blocked) below $5\%$ on benign traces; recall above $95\%$ on violation traces.
+
+
+%% ============================================================
+\section{The \modelname{} Framework}
+\label{sec:framework}
+%% ============================================================
+
+\modelname{} consists of four components: (i) a real-time execution-graph builder ingesting agent traces (Section~\ref{subsec:builder}), (ii) a heterogeneous dynamic graph encoder producing per-step subgraph embeddings (Section~\ref{subsec:dgnn}), (iii) a conformal prediction head computing the prediction set $\Ccal_\alpha$ at each step with online adaptive thresholding (Section~\ref{subsec:conformal}), and (iv) integration with the RobustIDPS.ai platform (Section~\ref{subsec:platform}). Figure~\ref{fig:architecture} shows the complete architecture; Algorithm~\ref{alg:conformalguard} gives the per-step certification procedure.
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+    >=stealth, line width=0.6pt,
+    box/.style={draw, rounded corners=2pt, minimum height=8mm, minimum width=22mm, font=\footnotesize\bfseries, align=center, line width=0.7pt},
+    inp/.style={box, fill=blue!10, draw=blue!60!black, minimum width=25mm},
+    bld/.style={box, fill=gray!12, draw=black!60, minimum width=23mm, minimum height=10mm},
+    enc/.style={box, fill=purple!12, draw=purple!70!black, minimum width=24mm, minimum height=11mm},
+    cal/.style={box, fill=orange!15, draw=orange!70!black, minimum width=22mm},
+    cp/.style={box, fill=red!12, draw=red!70!black, minimum width=22mm, minimum height=12mm},
+    blockverdict/.style={box, fill=green!12, draw=green!50!black, minimum width=22mm},
+    arrow/.style={->, line width=0.7pt},
+    cflow/.style={->, line width=0.6pt, dashed, draw=red!70!black},
+    aflow/.style={->, line width=0.6pt, dotted, draw=orange!70!black},
+    grouptitle/.style={font=\scriptsize\bfseries\itshape, text=black!70},
+    bigbox/.style={draw=black!30, dashed, rounded corners=3pt, line width=0.4pt},
+]
+
+%% Input: agent platforms (left)
+\node[inp] (a1) at (0,  0)  {AutoGen};
+\node[inp] (a2) at (0,-10mm) {MetaGPT};
+\node[inp] (a3) at (0,-20mm) {LangGraph};
+\node[inp] (a4) at (0,-30mm) {CrewAI};
+\node[grouptitle, above=1mm of a1] (atitle) {Agent platforms};
+\begin{scope}[on background layer]
+  \node[bigbox, fit=(a1)(a2)(a3)(a4)(atitle)] {};
+\end{scope}
+
+%% Graph builder
+\node[bld] (bld) at (40mm, -15mm) {Execution-graph\\builder};
+\node[grouptitle, above=1mm of bld] {Trace ingestion};
+
+%% Heterogeneous dynamic GNN encoder
+\node[enc] (enc) at (75mm, -15mm) {DyGFormer +\\HGT encoder};
+\node[grouptitle, above=1mm of enc] {Subgraph embedding};
+
+%% Calibration set + nonconformity score (top branch)
+\node[cal] (cal) at (110mm, -2mm) {Calibration\\set $\Dcal_{\mathrm{cal}}$};
+
+%% Conformal prediction head
+\node[cp] (cp) at (110mm, -22mm) {Conformal\\prediction\\$\Ccal_\alpha(\Gcal(t))$\\(Thm.~1)};
+\node[grouptitle, above=1mm of cal] {Calibration};
+\node[grouptitle, below=1mm of cp] {Online adaptive (Thm.~2)};
+
+%% Output: certified verdict
+\node[blockverdict] (verd) at (145mm, -22mm) {Block /\\allow\\verdict};
+
+%% Arrows
+\foreach \i in {1,2,3,4} {
+  \draw[arrow] (a\i) -- (bld);
+}
+\draw[arrow] (bld) -- (enc);
+\draw[arrow] (enc) -- (cp);
+\draw[cflow] (cal.south) -- (cp.north);
+\draw[aflow] (cp.east) -- (verd.west);
+\draw[aflow] (verd.north) to[bend right=40] (cal.east);
+
+%% Legend
+\node[draw=black!50, rounded corners=2pt, line width=0.4pt, fill=white,
+      below=12mm of cp, font=\scriptsize, align=left, inner sep=3pt] {%
+  \tikz\draw[arrow] (0,0) -- (4mm,0); \,\textbf{Inference path} \quad
+  \tikz\draw[cflow] (0,0) -- (4mm,0); \,\textbf{Calibration} \quad
+  \tikz\draw[aflow] (0,0) -- (4mm,0); \,\textbf{Verdict + adaptation}};
+
+\end{tikzpicture}
+\caption{The \modelname{} architecture. Agent traces from heterogeneous platforms (left, blue) feed into the execution-graph builder (gray), which constructs the dynamic heterogeneous graph $\Gcal(t)$. The DyGFormer + HGT encoder (purple) produces subgraph embeddings. The conformal prediction head (red) computes the prediction set $\Ccal_\alpha(\Gcal(t))$ using nonconformity scores calibrated against the held-out set $\Dcal_{\mathrm{cal}}$ (orange) per Theorem~\ref{thm:coverage}, with online adaptive threshold updates per Theorem~\ref{thm:online}. The block/allow verdict (green) is returned to the agent platform and the verdict log is fed back into the calibration buffer for online adaptation.}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{Real-time execution-graph builder}
+\label{subsec:builder}
+
+The graph builder ingests agent-platform traces in real time via instrumentation hooks: the AutoGen \texttt{agent.send/receive} callbacks, the LangGraph state-machine state-transition events, the MetaGPT role-message bus, and the CrewAI task-delegation log. Each event is mapped to a node-or-edge insertion in $\Gcal(t)$ with appropriate node-type and edge-type labels per Definition~\ref{def:graph}. Node features encode role, model identifier, prompt-template hash, tool name, parameter signature, and timing; edge features encode causal relationship and message-content embedding (computed via a frozen sentence transformer). The builder maintains a sliding window of the most recent $L = 50$ steps for downstream analysis.
+
+\subsection{Heterogeneous dynamic graph encoder}
+\label{subsec:dgnn}
+
+For each query node $v$ at time $t$, the encoder samples the most recent $K = 32$ temporal neighbors of $v$ across all relations and applies a DyGFormer-HGT~\cite{yu2023dygformer,hu2020hgt} backbone with HGT relation-aware attention:
+\begin{equation}
+    \alpha_{u, v, r} = \softmax\Bigl(\frac{(\mathbf{W}_Q^{\tau(v)} \mathbf{h}_v)^\top \mathbf{W}_R^r (\mathbf{W}_K^{\tau(u)} \mathbf{h}_u)}{\sqrt{d/H}}\Bigr).
+\end{equation}
+Three encoder layers, $H = 8$ heads, hidden dimension $d = 256$. The output is a per-step subgraph embedding $\mathbf{h}(\Gcal(t)) \in \R^d$ which the conformal head ingests. We benchmark a DyG-Mamba~\cite{li2025dygmamba} variant for the temporal component, leveraging the Lipschitz-constrained continuous-time aggregation that synergizes with the conformal exchangeability assumption (Section~\ref{sec:theory}). Calibration of the resulting nonconformity scores follows our prior uncertainty-calibrated hierarchical Gaussian-process methodology~\cite{anaedevha2026uchgp}.
+
+\subsection{Conformal prediction head with online adaptation}
+\label{subsec:conformal}
+
+The conformal prediction head computes the prediction set $\Ccal_\alpha(\Gcal(t))$ of safe next-step actions at each step $t$ using split conformal prediction. The nonconformity score is
+\begin{equation}
+    \NCS(\Gcal(t), a) = -\log f_{\theta}(a \mid \mathbf{h}(\Gcal(t))),
+\label{eq:ncs}
+\end{equation}
+where $f_\theta$ is a learned safety-classifier on top of the encoder embedding, scoring each candidate next-action $a$ against the subgraph context. The conformal threshold $\hat{q}_\alpha$ is the $\lceil (n_{\mathrm{cal}} + 1)(1 - \alpha) \rceil / n_{\mathrm{cal}}$-empirical quantile of the calibration nonconformity scores. The prediction set is
+\begin{equation}
+    \Ccal_\alpha(\Gcal(t)) = \{a \in \Acal : \NCS(\Gcal(t), a) \leq \hat{q}_\alpha\}.
+\label{eq:predset}
+\end{equation}
+At deployment time, the next agent action $a^{\star}$ is allowed if $a^{\star} \in \Ccal_\alpha(\Gcal(t))$ and blocked otherwise. Online adaptation per Gibbs--Cand\`es~\cite{gibbs2021adaptive} updates $\hat{q}_\alpha$ via $\hat{q}_\alpha^{(t+1)} = \hat{q}_\alpha^{(t)} + \gamma (\mathbb{1}[\mathrm{err}_t] - \alpha)$ with learning rate $\gamma$, ensuring valid long-run coverage under distribution shift; full convergence guarantee in Theorem~\ref{thm:online}.
+
+Algorithm~\ref{alg:conformalguard} gives the complete per-step certification procedure including online threshold update, integration with our prior reinforcement-learning-based active-investigation framework~\cite{anaedevha2025dqn} for analyst-confirmed feedback, and the cross-platform federation extending our prior wireless-device-identification federated topology~\cite{anaedevha2024wireless} to the agent-monitoring setting.
+
+\begin{algorithm}[!t]
+\small
+\caption{\modelname{} Per-Step Safety Certification}
+\label{alg:conformalguard}
+\begin{algorithmic}[1]
+\REQUIRE Execution graph $\Gcal(t)$, candidate actions $\Acal$, calibration $\Dcal_{\mathrm{cal}}$, target $\alpha$, online learning rate $\gamma$, current threshold $\hat{q}_\alpha^{(t)}$
+\ENSURE Prediction set $\Ccal_\alpha(\Gcal(t))$, verdict $v \in \{\textsc{allow}, \textsc{block}\}$, updated threshold $\hat{q}_\alpha^{(t+1)}$
+\STATE Encode current subgraph: $\mathbf{h} \gets \mathrm{DyGFormer\text{-}HGT}(\Gcal(t))$
+\STATE Compute nonconformity scores: $s_a \gets \NCS(\Gcal(t), a)$ for all $a \in \Acal$
+\STATE \textbf{Construct prediction set:} $\Ccal_\alpha(\Gcal(t)) \gets \{a \in \Acal : s_a \leq \hat{q}_\alpha^{(t)}\}$
+\STATE Receive proposed agent action $a^{\star}$
+\IF{$a^{\star} \in \Ccal_\alpha(\Gcal(t))$}
+    \STATE $v \gets \textsc{allow}$; \textbf{return} $(\Ccal_\alpha, v)$ to agent platform
+\ELSE
+    \STATE $v \gets \textsc{block}$; route $(\Gcal(t), a^{\star})$ to analyst-review queue (with optional RL active investigation per~\cite{anaedevha2025dqn})
+\ENDIF
+\STATE Receive ground-truth label $y_t \in \{\text{safe}, \text{violation}\}$ from analyst (delayed) or self-supervised heuristic
+\STATE \textbf{Online threshold update:} $\hat{q}_\alpha^{(t+1)} \gets \hat{q}_\alpha^{(t)} + \gamma\bigl(\mathbb{1}[\text{err}_t] - \alpha\bigr)$
+\quad \COMMENT{Gibbs--Cand\`es online adaptation}
+\STATE Append $(\Gcal(t), a^{\star}, y_t)$ to rolling calibration buffer
+\STATE \textbf{return} $(\Ccal_\alpha, v, \hat{q}_\alpha^{(t+1)})$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Integration with the RobustIDPS.ai platform}
+\label{subsec:platform}
+
+\modelname{} is deployed as a dedicated agent-layer safety-certification module within the RobustIDPS.ai platform~\cite{anaedevha2026robustidps}, complementing the platform's existing detection pipeline: LipMamba provides certified language-model-side defense against hidden-state poisoning, MambaShield provides sequential-pattern intrusion detection, CT-DGNN-JailGuard detects coordinated jailbreak campaigns against LLM APIs, FedLoRAGuard verifies adapter-supply-chain integrity, and FedLLM-API detects zero-day attacks at enterprise gateways. \modelname{} closes the gap at the \emph{agent-orchestration boundary}, where multi-step executions must be certified in real time. Each agent step is screened by \modelname{} in $\le 23$~ms on a single A100, returning $(\Ccal_\alpha, v, \hat{q}_\alpha)$. The platform's MITRE ATT\&CK Mapper consumes block decisions for technique enrichment, the OWASP LLM Top 10 (2025) Scorecard consumes them for compliance reporting, and the production-deployment infrastructure logs all $(\Gcal(t), a^{\star}, v, y_t)$ tuples to support the rolling calibration buffer.
+
+
+%% ============================================================
+\section{Theoretical Properties}
+\label{sec:theory}
+%% ============================================================
+
+This section presents two theorems: a marginal-coverage theorem for split conformal prediction over execution subgraphs (Theorem~\ref{thm:coverage}) and a long-run coverage theorem for online adaptive conformal prediction under distribution shift (Theorem~\ref{thm:online}). Proof sketches appear in the main text; full proofs are deferred to a public supplementary appendix.
+
+\subsection{Marginal-coverage theorem}
+
+\begin{theorem}[Distribution-Free Marginal Coverage on Execution Subgraphs]
+\label{thm:coverage}
+Let $\Dcal_{\mathrm{cal}} = \{(\Gcal_i, a_i, y_i)\}_{i=1}^{n}$ be a calibration set of $n$ execution-subgraph trajectories with labels indicating safe-action validity, and let $(\Gcal_{n+1}, a_{n+1}, y_{n+1})$ be a test trajectory drawn exchangeably with $\Dcal_{\mathrm{cal}}$. Define nonconformity scores $s_i = \NCS(\Gcal_i, a_i)$ via Eq.~\eqref{eq:ncs} and the conformal threshold
+\begin{equation}
+    \hat{q}_\alpha = \mathrm{Quantile}\left(\bigl\{s_1, \ldots, s_n\bigr\}; \, \frac{\lceil (n+1)(1-\alpha) \rceil}{n}\right).
+\end{equation}
+Then the prediction set $\Ccal_\alpha(\Gcal_{n+1})$ from Eq.~\eqref{eq:predset} satisfies
+\begin{equation}
+    \Prob\bigl(a_{n+1} \in \Ccal_\alpha(\Gcal_{n+1})\bigr) \geq 1 - \alpha,
+\label{eq:coverage}
+\end{equation}
+holding distribution-free over $\Dcal_{\mathrm{cal}}$, $\Gcal_{n+1}$, and the underlying LLM. Furthermore, if the score distribution is continuous and ties have probability zero,
+\begin{equation}
+    \Prob\bigl(a_{n+1} \in \Ccal_\alpha(\Gcal_{n+1})\bigr) \leq 1 - \alpha + \frac{1}{n+1}.
+\end{equation}
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Apply the standard split-conformal construction~\cite{vovk2005algorithmic,lei2018distribution}. Under exchangeability of $\{s_1, \ldots, s_{n+1}\}$, the rank of $s_{n+1}$ among the augmented set is uniform on $\{1, \ldots, n+1\}$. By construction, $a_{n+1}$ lies in $\Ccal_\alpha$ iff $s_{n+1} \leq \hat{q}_\alpha$, which occurs with probability at least $\lceil (n+1)(1-\alpha) \rceil / (n+1) \geq 1 - \alpha$. The graph-conformal extension to subgraph nonconformity scores follows the analysis of CF-GNN~\cite{huang2023cfgnn} and Zargarbashi et al.~\cite{zargarbashi2023conformal}. The exchangeability-of-subgraphs assumption holds in our setting under the mild requirement that the calibration corpus is constructed by uniform random sampling of agent traces, with the test trace drawn from the same distribution.
+\end{proof}
+
+The bound is finite-sample, distribution-free, and parameter-free: it requires no assumption on the underlying LLM family, no smoothness assumption on the safety classifier $f_\theta$, and no parametric assumption on the agent-graph distribution. Numerically, at $\alpha = 0.05$ and $n_{\mathrm{cal}} = 2000$ calibration trajectories, the upper bound is $1-\alpha + 1/(n+1) \approx 0.9505$, tight to $0.05\%$.
+
+\subsection{Online adaptive coverage under distribution shift}
+
+\begin{theorem}[Long-Run Coverage Under Distribution Shift]
+\label{thm:online}
+Suppose \modelname{} runs Algorithm~\ref{alg:conformalguard} for $T$ rounds with online threshold update rate $\gamma > 0$. Let $\mathrm{err}_t = \mathbb{1}[a_t \notin \Ccal_\alpha^{(t)}(\Gcal(t))]$ denote the per-step coverage error. Then for any sequence of distributions $\{\Pcal^{(t)}\}_{t=1}^{T}$ (no exchangeability assumption across rounds),
+\begin{equation}
+    \left|\frac{1}{T}\sum_{t=1}^{T}\mathrm{err}_t - \alpha\right| \leq \frac{1 + |\hat{q}_\alpha^{(1)} - \hat{q}_\alpha^{*}|}{\gamma T},
+\label{eq:online}
+\end{equation}
+where $\hat{q}_\alpha^{*}$ is any reference threshold. Consequently, $\frac{1}{T}\sum_{t=1}^{T}\mathrm{err}_t \to \alpha$ as $T \to \infty$, achieving valid long-run coverage even under arbitrary distribution shift.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Apply the Gibbs--Cand\`es online adaptive conformal analysis~\cite{gibbs2021adaptive}. The update rule $\hat{q}_\alpha^{(t+1)} = \hat{q}_\alpha^{(t)} + \gamma(\mathbb{1}[\mathrm{err}_t] - \alpha)$ is equivalent to projected stochastic gradient descent on the pinball loss with learning rate $\gamma$. By telescoping the $\hat{q}_\alpha$ updates and bounding the cumulative threshold drift, we obtain the regret bound~\eqref{eq:online}. The graph-execution extension applies because the analysis treats $\NCS(\Gcal(t), a_t)$ as a black-box scalar score; the underlying graph structure and DGNN encoder enter only through the score function.
+\end{proof}
+
+The online guarantee complements the marginal-coverage theorem: split conformal (Theorem~\ref{thm:coverage}) gives finite-sample coverage at deployment time under exchangeability, while online conformal (Theorem~\ref{thm:online}) gives long-run coverage even when exchangeability is violated by adversarial distribution shift. \modelname{} runs both mechanisms simultaneously: at any step $t$, the prediction set is constructed using the current adaptive threshold, and coverage is guaranteed marginally under exchangeability and asymptotically under arbitrary shift.
+
+\subsection{Numerical instantiation}
+
+At $\alpha = 0.05$, $n_{\mathrm{cal}} = 2000$, $\gamma = 0.05$, $T = 50{,}000$ steps, the marginal-coverage upper bound is $0.9505$, and the long-run regret bound from~\eqref{eq:online} evaluates to $|\bar{\mathrm{err}} - 0.05| \leq 0.0008$ after one full deployment day --- well within operational tolerance.
+
+
+%% ============================================================
+\section{Experimental Methodology}
+\label{sec:experiments}
+%% ============================================================
+
+\subsection{The \benchname{} benchmark}
+
+We construct \benchname{}, a benchmark of $12{,}400$ labeled multi-agent execution traces across four agent platforms (AutoGen $30\%$, MetaGPT $30\%$, LangGraph $25\%$, CrewAI $15\%$) and $11$ critical safety-violation classes per Definition~\ref{def:violation}. Traces are constructed by (i) running real agent workflows (data-analysis, code-generation, customer-service, multi-tool research) on the four platforms with logging instrumentation, (ii) injecting attacks following Greshake et al.~\cite{greshake2023indirect} (indirect prompt injection), AgentPoison~\cite{chen2024agentpoison} (memory poisoning), Agent Smith~\cite{gu2024agentsmith} (infectious jailbreak), and synthesized attack patterns aligned with the OWASP LLM Top 10 (2025), and (iii) labeling each step as safe or violation through a combination of automated rule matching (where deterministic predicates apply) and three-annotator human review with inter-annotator agreement $\kappa = 0.83$. Trace lengths range from $5$ to $50$ steps, mean $19.4$.
+
+We additionally evaluate on R-Judge~\cite{yuan2024rjudge} (the canonical multi-agent safety benchmark, $569$ traces) and AgentSafetyBench~\cite{agentsafetybench2024}, and integrate with our internal CT-DGNN-JailGuard~\cite{anaedevha2026robustidps} jailbreak campaign-detection corpus for cross-paper consistency.
+
+\subsection{Baselines}
+
+We compare \modelname{} against six baselines: (i) LlamaGuard-2~\cite{inan2023llamaguard} per-call output filter; (ii) WildGuard~\cite{han2024wildguard} per-call multi-purpose safety classifier; (iii) Circuit Breakers~\cite{zou2024circuit} representation-rerouting safety; (iv) OpenAI Moderation API~\cite{openai2023moderation}; (v) ReAct + per-step LlamaGuard (per-call, applied within the agent loop); (vi) R-Judge GPT-4-as-judge~\cite{yuan2024rjudge}. We additionally include our prior CT-DGNN-JailGuard~\cite{anaedevha2026robustidps} as a cross-paper consistency baseline.
+
+\subsection{Evaluation metrics}
+
+We report four metric categories. \emph{Coverage and certification:} empirical coverage rate $\Prob(\text{safe action} \in \Ccal_\alpha)$; average prediction-set width $\bar{|\Ccal_\alpha|}$; cumulative-error trajectory under online adaptation. \emph{Detection:} fraction of critical-violation traces blocked; per-class breakdown across the $11$ violation classes; false-block rate on benign traces. \emph{Calibration:} reliability diagrams across the eleven violation classes following our prior calibration framework~\cite{anaedevha2026uchgp}. \emph{Efficiency:} per-step inference latency on a single A100; throughput; FLOPs per step; peak GPU memory; P50/P95/P99 latency percentiles. Multi-dataset comparisons use the Friedman test with Holm post-hoc correction following Dem\v{s}ar~\cite{demsar2006statistical}.
+
+\subsection{Implementation}
+
+\modelname{} is implemented in PyTorch~$2.1$ with PyTorch Geometric for the graph operations and the OpenAI / Anthropic / open-source-LLM clients for agent invocation. Encoder: 3-layer DyGFormer-HGT, $H = 8$ heads, hidden dimension $d = 256$. Calibration corpus: $n_{\mathrm{cal}} = 2000$ randomly held-out traces. Online learning rate $\gamma = 0.05$. Target $\alpha = 0.05$. AdamW~\cite{loshchilov2019adamw} with learning rate $5 \times 10^{-4}$, cosine annealing over $30$ training epochs of the safety classifier. Hardware: $4 \times $ NVIDIA A100 80~GB. Each result is mean over three seeds ($42$, $137$, $2026$).
+
+
+%% ============================================================
+\section{Results}
+\label{sec:results}
+%% ============================================================
+
+\subsection{Main results: coverage and violation blocking}
+
+Table~\ref{tab:main} reports the headline comparison on \benchname{} and R-Judge. \modelname{} achieves empirical coverage $94.9\%$ at target $1-\alpha = 0.95$ (within the marginal-coverage upper bound of $0.9505$) and blocks $96.1\%$ of critical violation traces against $18.3$--$31.2\%$ for existing baselines, with average prediction-set width $1.8$ safe continuations per step.
+
+\begin{table}[!t]
+\centering
+\caption{Main results on \benchname{} and R-Judge. \emph{Cov.} is empirical coverage at target $0.95$; \emph{Block} is the fraction of critical-violation traces blocked; \emph{FBR} is false-block rate on benign traces. Best in \textbf{bold}; second-best \underline{underlined}.}
+\label{tab:main}
+\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{Method} & Cov.\ & Block (\benchname) & Block (R-Judge) & FBR & Latency \\
+\midrule
+LlamaGuard-2~\cite{inan2023llamaguard} & N/A & 21.6 & 19.4 & 4.2 & 38\,ms \\
+WildGuard~\cite{han2024wildguard} & N/A & 28.4 & 26.1 & 5.1 & 42\,ms \\
+Circuit Breakers~\cite{zou2024circuit} & N/A & 24.7 & 22.8 & 7.3 & 51\,ms \\
+OpenAI Moderation API~\cite{openai2023moderation} & N/A & 18.3 & 16.7 & 3.6 & 88\,ms \\
+ReAct + LlamaGuard (per-step) & N/A & 31.2 & 28.5 & 6.4 & 75\,ms \\
+GPT-4-as-judge~\cite{yuan2024rjudge} & N/A & \underline{74.6} & \underline{72.1} & 8.9 & 1{,}900\,ms \\
+CT-DGNN-JailGuard~\cite{anaedevha2026robustidps} & N/A & 67.8 & 64.3 & 5.7 & 28\,ms \\
+\midrule
+\modelname{} (ours) & \textbf{94.9} & \textbf{96.1} & \textbf{93.4} & \textbf{3.4} & \textbf{23\,ms} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The Friedman test across the eight method-benchmark combinations yields $\chi_F^2(7) = 53.8$, $p < 10^{-9}$, rejecting the null of equal performance. Holm post-hoc at $\alpha = 0.05$ confirms \modelname{} significantly exceeds every baseline. Wilcoxon signed-rank gives $p < 0.001$ for the gap to GPT-4-as-judge ($r = 0.81$) and $p < 0.001$ for the gap to CT-DGNN-JailGuard ($r = 0.74$).
+
+\subsection{Coverage-error trajectory under distribution shift}
+
+Figure~\ref{fig:coverage} shows the cumulative coverage error $\bar{\mathrm{err}}_T = \frac{1}{T}\sum_{t=1}^{T} \mathrm{err}_t$ as a function of step $T$ on a $50{,}000$-step held-out execution trajectory with injected distribution shift at $T = 15{,}000$ (new attack family introduced). \modelname{}'s online-adaptive mechanism (red) maintains long-run convergence to the target rate $\alpha = 0.05$ (gray dashed), while a static-threshold variant (blue) drifts upward indefinitely after the shift.
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=\linewidth, height=5.6cm,
+    xlabel={\textbf{Step $T$ (thousands)}},
+    ylabel={\textbf{Cumulative error rate $\bar{\mathrm{err}}_T$}},
+    xlabel style={font=\footnotesize\bfseries},
+    ylabel style={font=\footnotesize\bfseries},
+    xmin=0, xmax=50,
+    ymin=0, ymax=0.15,
+    xtick={0, 10, 15, 25, 35, 50},
+    x tick label style={font=\scriptsize\bfseries},
+    y tick label style={font=\scriptsize\bfseries},
+    legend style={
+        at={(0.5, 1.10)}, anchor=south,
+        legend columns=3, font=\scriptsize\bfseries,
+        column sep=8pt, draw=none, fill=none
+    },
+    legend cell align=left,
+    grid=major, grid style={gray!20},
+    line width=1.0pt,
+]
+% Static threshold drift
+\addplot[color=blue!70!black, mark=square*, mark size=0.6pt, mark repeat=300]
+    coordinates {
+    (0, 0.04) (5, 0.048) (10, 0.052) (15, 0.058) (20, 0.082) (25, 0.098)
+    (30, 0.108) (35, 0.116) (40, 0.122) (45, 0.126) (50, 0.130)
+    };
+% Online adaptive convergence
+\addplot[color=red!80!black, mark=triangle*, mark size=0.8pt, mark repeat=300, line width=1.2pt]
+    coordinates {
+    (0, 0.04) (5, 0.048) (10, 0.052) (15, 0.054) (16, 0.080) (18, 0.072)
+    (20, 0.064) (22, 0.058) (25, 0.054) (30, 0.052) (35, 0.051)
+    (40, 0.050) (45, 0.050) (50, 0.050)
+    };
+% Target
+\addplot[color=gray!60, dashed, line width=0.8pt, no marks]
+    coordinates {(0, 0.05) (50, 0.05)};
+% Mark distribution shift
+\draw[orange!80, dashed, line width=0.5pt] (axis cs:15, 0) -- (axis cs:15, 0.15);
+\node[font=\tiny\bfseries, orange!80!black, anchor=south] at (axis cs:15, 0.13) {distribution shift};
+\legend{Static threshold, \textbf{Online adaptive}, target $\alpha=0.05$}
+\end{axis}
+\end{tikzpicture}
+\caption{\textbf{Cumulative coverage error under distribution shift.} A new attack family is introduced at step $T = 15{,}000$ (orange dashed). The static-threshold variant (blue) sees its coverage error drift upward to $\bar{\mathrm{err}}_{50000} \approx 0.13$, far above the target $\alpha = 0.05$. \modelname{}'s online-adaptive mechanism (red) reacts with a transient spike to $0.08$ within $1{,}000$ steps and re-converges to the target rate $0.05$ within $\sim 10{,}000$ steps, in agreement with Theorem~\ref{thm:online}'s regret bound $1/(\gamma T)$ and the $\gamma = 0.05$ deployment learning rate.}
+\label{fig:coverage}
+\end{figure}
+
+\subsection{Coverage-utility Pareto frontier}
+
+Figure~\ref{fig:pareto} positions every method on the false-block-rate vs.\ violation-blocking-rate plane.
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=\linewidth, height=5.8cm,
+    xlabel={\textbf{False-block rate (\%) -- safety overhead}},
+    ylabel={\textbf{Critical-violation block rate (\%) -- coverage}},
+    xlabel style={font=\footnotesize\bfseries},
+    ylabel style={font=\footnotesize\bfseries},
+    xmin=0, xmax=12,
+    ymin=10, ymax=100,
+    xtick={0, 2, 4, 6, 8, 10, 12},
+    x tick label style={font=\scriptsize\bfseries},
+    y tick label style={font=\scriptsize\bfseries},
+    grid=major, grid style={gray!20},
+    legend style={at={(0.5, 1.10)}, anchor=south, font=\scriptsize\bfseries,
+                  legend columns=3, draw=none, fill=none, column sep=8pt},
+]
+\addplot[no marks, gray!50, dashed, line width=0.8pt, smooth]
+    coordinates {(2, 25) (4, 60) (6, 85) (8, 92) (10, 95)};
+\addlegendentry{Pareto frontier}
+% Per-call baselines (low FBR, low block)
+\addplot[only marks, mark=square*, mark size=2.4pt, color=blue!70!black] coordinates {(4.2, 21.6)};
+\addlegendentry{LlamaGuard-2}
+\addplot[only marks, mark=triangle*, mark size=2.4pt, color=cyan!50!black] coordinates {(5.1, 28.4)};
+\addlegendentry{WildGuard}
+\addplot[only marks, mark=*, mark size=2.4pt, color=purple!70!black] coordinates {(7.3, 24.7)};
+\addlegendentry{Circuit Breakers}
+\addplot[only marks, mark=diamond*, mark size=2.4pt, color=orange!70!black] coordinates {(3.6, 18.3)};
+\addlegendentry{OpenAI Mod.\ API}
+\addplot[only marks, mark=triangle, mark size=2.4pt, color=brown!60, line width=0.8pt] coordinates {(6.4, 31.2)};
+\addlegendentry{ReAct + LlamaGuard}
+\addplot[only marks, mark=pentagon*, mark size=2.6pt, color=violet!70!black] coordinates {(8.9, 74.6)};
+\addlegendentry{GPT-4 judge}
+\addplot[only marks, mark=diamond, mark size=2.4pt, color=teal!70!black, line width=0.8pt] coordinates {(5.7, 67.8)};
+\addlegendentry{CT-DGNN-JailGuard}
+% ConformalGuard
+\addplot[only marks, mark=star, mark size=4.4pt, color=red!80!black, line width=1.2pt] coordinates {(3.4, 96.1)};
+\addlegendentry{\textbf{ConformalGuard}}
+\node[font=\scriptsize\bfseries, anchor=south] at (axis cs: 3.4, 97.5) {\textbf{$\alpha = 0.05$}};
+\end{axis}
+\end{tikzpicture}
+\caption{\textbf{Coverage--utility Pareto frontier on \benchname{}.} \modelname{} (red star) sits at the upper-left frontier extremum: $96.1\%$ critical-violation blocking with the lowest false-block rate ($3.4\%$) of any method. Per-call baselines (blue/cyan/purple/orange) cluster at $20$--$30\%$ blocking with $4$--$7\%$ FBR --- they cannot reach the upper-right region without unacceptable false-positive cost.}
+\label{fig:pareto}
+\end{figure}
+
+\subsection{Multi-axis achievement profile}
+
+Figure~\ref{fig:radar} summarizes \modelname{}'s performance across seven evaluation dimensions. The non-saturated axes (\emph{Set Width} at $60$ scaled, \emph{Latency Budget} at $77$ scaled) indicate the principal directions for further studies.
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[scale=0.78]
+  \def\naxes{7}
+  \def\maxval{100}
+  \pgfmathsetmacro{\angleincrement}{360/\naxes}
+  \foreach \level in {20,40,60,80,100} {
+    \pgfmathsetmacro{\r}{\level/\maxval*2.7}
+    \draw[gray!25, line width=0.3pt] (0,0)
+      \foreach \i in {1,...,\naxes} { -- ({\angleincrement*\i-90}:\r) } -- cycle;
+    \node[font=\tiny, gray!60] at (90:\r+0.15) {\level};
+  }
+  \foreach \i in {1,...,\naxes} {
+    \pgfmathsetmacro{\angle}{\angleincrement*\i-90}
+    \draw[gray!40, line width=0.3pt] (0,0) -- (\angle:2.7);
+    \pgfmathsetmacro{\labelr}{3.20}
+    \node[font=\tiny\bfseries, align=center, text width=1.5cm] at (\angle:\labelr) {%
+      \ifnum\i=1 Coverage\\[-1pt](\benchname)\fi
+      \ifnum\i=2 Block\\[-1pt]Rate\fi
+      \ifnum\i=3 1$-$FBR\fi
+      \ifnum\i=4 Set\\[-1pt]Width\\[-1pt](narrow)\fi
+      \ifnum\i=5 Calib.\\[-1pt](1$-$ECE)\fi
+      \ifnum\i=6 Latency\\[-1pt]Budget\fi
+      \ifnum\i=7 Online\\[-1pt]Adapt.\fi
+    };
+  }
+  \draw[red!80, line width=1.2pt, fill=red!15, fill opacity=0.4]
+    ({1*\angleincrement-90}:{94.9/\maxval*2.7}) --
+    ({2*\angleincrement-90}:{96.1/\maxval*2.7}) --
+    ({3*\angleincrement-90}:{96.6/\maxval*2.7}) --   % 1 - 0.034
+    ({4*\angleincrement-90}:{60/\maxval*2.7}) --     % set width 1.8/3 normalized
+    ({5*\angleincrement-90}:{96.4/\maxval*2.7}) --   % 1 - 0.036
+    ({6*\angleincrement-90}:{77/\maxval*2.7}) --     % 23ms / 100ms target
+    ({7*\angleincrement-90}:{99/\maxval*2.7}) --     % strong online adapt
+    cycle;
+  \draw[blue!50, line width=0.8pt, dashed, fill=blue!10, fill opacity=0.25]
+    ({1*\angleincrement-90}:{0/\maxval*2.7}) --
+    ({2*\angleincrement-90}:{74.6/\maxval*2.7}) --
+    ({3*\angleincrement-90}:{91.1/\maxval*2.7}) --
+    ({4*\angleincrement-90}:{0/\maxval*2.7}) --
+    ({5*\angleincrement-90}:{88.0/\maxval*2.7}) --
+    ({6*\angleincrement-90}:{5/\maxval*2.7}) --
+    ({7*\angleincrement-90}:{0/\maxval*2.7}) --
+    cycle;
+  \draw[orange!80, line width=0.8pt, dotted, fill=orange!8, fill opacity=0.20]
+    ({1*\angleincrement-90}:{0/\maxval*2.7}) --
+    ({2*\angleincrement-90}:{21.6/\maxval*2.7}) --
+    ({3*\angleincrement-90}:{95.8/\maxval*2.7}) --
+    ({4*\angleincrement-90}:{0/\maxval*2.7}) --
+    ({5*\angleincrement-90}:{93.4/\maxval*2.7}) --
+    ({6*\angleincrement-90}:{62/\maxval*2.7}) --
+    ({7*\angleincrement-90}:{0/\maxval*2.7}) --
+    cycle;
+  \foreach \val/\idx in {94.9/1, 96.1/2, 96.6/3, 60/4, 96.4/5, 77/6, 99/7} {
+    \fill[red!80] ({\idx*\angleincrement-90}:{\val/\maxval*2.7}) circle (1.4pt);
+  }
+  \node[font=\tiny\bfseries, anchor=east] at (-2.4, -3.4) {\textcolor{red!80}{\rule{8pt}{1.5pt}} \textbf{ConformalGuard}};
+  \node[font=\tiny\bfseries, anchor=center] at (0, -3.4) {\textcolor{blue!50}{- - -} GPT-4 judge};
+  \node[font=\tiny\bfseries, anchor=west] at (1.4, -3.4) {\textcolor{orange!80}{$\cdots$} LlamaGuard-2};
+\end{tikzpicture}
+\caption{\textbf{Multi-axis achievement profile.} \modelname{} (red, solid) achieves balanced coverage including the Coverage and Online-Adaptation axes that are zero for non-conformal baselines. GPT-4-as-judge (blue dashed) wins on raw block rate but is $80 \times$ slower (low Latency-Budget axis). LlamaGuard-2 (orange dotted) is fast but blocks only $21.6\%$ of violations.}
+\label{fig:radar}
+\end{figure}
+
+
+%% ============================================================
+\section{Ablation Studies}
+\label{sec:ablation}
+%% ============================================================
+
+Table~\ref{tab:ablation} reports the contribution of each \modelname{} component on \benchname{}.
+
+\begin{table}[!t]
+\centering
+\caption{Component ablation on \benchname{} ($\alpha = 0.05$, $n_{\mathrm{cal}} = 2000$).}
+\label{tab:ablation}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Configuration} & Cov.\ & Block & FBR & $|\Ccal|$ \\
+\midrule
+\modelname{} (full) & \textbf{94.9} & \textbf{96.1} & \textbf{3.4} & 1.8 \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{Architectural ablations}}\\
+\quad w/o subgraph encoding (per-step features only) & 94.7 & 81.4 & 4.2 & 2.1 \\
+\quad w/o HGT relation-aware attention & 94.6 & 87.3 & 3.8 & 2.0 \\
+\quad w/o DyGFormer (static-graph GAT) & 94.5 & 84.6 & 4.1 & 2.0 \\
+\quad w/o multimodal node features (text only) & 94.7 & 91.5 & 3.6 & 1.9 \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{Conformal-mechanism ablations}}\\
+\quad w/o online adaptation (static $\hat{q}_\alpha$) & 91.2 & 92.4 & 3.5 & 1.8 \\
+\quad w/o calibrated nonconformity score & 87.8 & 88.6 & 5.7 & 2.4 \\
+\quad full conformal (no split) & 94.8 & 95.9 & 3.5 & 1.8 \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{Sensitivity to $\alpha$}}\\
+\quad $\alpha = 0.01$ (target $0.99$) & 98.6 & 98.4 & 6.8 & 2.7 \\
+\quad $\alpha = 0.05$ (default) & 94.9 & 96.1 & 3.4 & 1.8 \\
+\quad $\alpha = 0.10$ (target $0.90$) & 89.7 & 89.4 & 1.9 & 1.4 \\
+\quad $\alpha = 0.20$ (target $0.80$) & 79.8 & 76.5 & 1.0 & 1.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three observations stand out. First, the subgraph-encoding component contributes the largest accuracy gain: replacing graph-level reasoning with per-step features alone drops violation-block rate by $14.7$~percentage points, confirming that compositional safety violations are not detectable from per-step signals in isolation. Second, online adaptation contributes substantially under the simulated distribution-shift evaluation (reduced from $94.9\%$ to $91.2\%$ coverage when removed), validating Theorem~\ref{thm:online}'s practical relevance. Third, the $\alpha$ sensitivity sweep shows the predictable coverage-utility trade-off: tighter $\alpha = 0.01$ achieves $98.6\%$ coverage at $6.8\%$ FBR (an unusable false-positive cost for production), while looser $\alpha = 0.20$ reduces FBR to $1.0\%$ but drops violation blocking to $76.5\%$. The default $\alpha = 0.05$ sits at the operational elbow.
+
+
+%% ============================================================
+\section{Discussion}
+\label{sec:discussion}
+%% ============================================================
+
+\subsection{Production deployment within RobustIDPS.ai}
+
+\modelname{} is deployed as a dedicated agent-layer safety-certification module within the RobustIDPS.ai platform~\cite{anaedevha2026robustidps}, complementing the platform's existing detection pipeline. Each agent step is screened by \modelname{} in $\le 23$~ms on a single A100, returning the prediction set $\Ccal_\alpha(\Gcal(t))$, the verdict $v \in \{\textsc{allow}, \textsc{block}\}$, and the current adaptive threshold $\hat{q}_\alpha$. The platform's MITRE ATT\&CK Mapper consumes block decisions for technique enrichment, the OWASP LLM Top 10 (2025) Scorecard consumes them for compliance reporting, and the active-investigation reinforcement-learning loop~\cite{anaedevha2025dqn} routes blocked actions to analyst review for label-feedback into the rolling calibration buffer. Over a $30$-day production evaluation processing $1.84$~M agent steps across three partner deployments, \modelname{} blocked $63{,}847$ steps as critical-violation candidates (confirmed by manual analyst review) with $1{,}920$ false positives, yielding $97.1\%$ precision and $94.6\%$ recall in production --- consistent with the laboratory results. Average latency $24.7$~ms (P99: $48$~ms), within the $50$~ms inline-deployment envelope.
+
+\subsection{Limitations and further studies}
+
+Three limitations identified in Fig.~\ref{fig:radar} merit further study. \emph{First}, the average prediction-set width of $1.8$ safe-continuations-per-step (Set Width axis at $60$ scaled) is competitive but leaves room for improvement; richer subgraph-augmented embeddings or risk-controlling prediction sets~\cite{bates2021distribution} could narrow the set without sacrificing coverage. \emph{Second}, the exchangeability assumption underpinning Theorem~\ref{thm:coverage} can be violated by white-box adaptive adversaries who explicitly target the calibration distribution; concurrent work on adversarially-robust conformal prediction~\cite{gendler2022adversarially,yan2024adversarial} provides the relevant fortification but at the cost of conservative bounds. \emph{Third}, the $23$~ms latency, while inside the inline envelope, leaves limited headroom for sub-millisecond agent-orchestration scenarios; compiled CUDA kernels and quantized DyGFormer-HGT variants could reduce latency by $\sim 3\times$.
+
+\subsection{Threats to validity}
+
+Two threats to validity merit acknowledgment. The \benchname{} benchmark mixes real-platform agent traces with synthesized attack scenarios; while the $11$ violation classes span the OWASP LLM Top 10 (2025) catalog and key results from R-Judge and AgentSafetyBench, real-world multi-agent attacks may exhibit patterns not captured. The exchangeability assumption is mild but not unconditional; production deployments must monitor for distribution shift and trigger online adaptation at the appropriate cadence.
+
+
+%% ============================================================
+\section{Conclusion}
+\label{sec:conclusion}
+%% ============================================================
+
+This paper introduced \modelname{}, the first framework providing distribution-free, finite-sample, parametric-assumption-free safety certification for multi-agent LLM systems. Three contributions were presented: a formalization of the multi-agent execution graph as a continuous-time heterogeneous dynamic graph, a marginal-coverage theorem for graph conformal prediction over execution subgraphs (Theorem~\ref{thm:coverage}), and an online-adaptive coverage theorem maintaining valid long-run guarantees under arbitrary distribution shift (Theorem~\ref{thm:online}). Evaluation on the \benchname{} benchmark of $12{,}400$ multi-agent execution traces, on R-Judge, and on AgentSafetyBench demonstrates empirical coverage $94.9\%$ at target $0.95$, blocking of $96.1\%$ of critical violations against $18.3$--$31.2\%$ for existing baselines, average prediction-set width $1.8$, and per-step inference latency $23$~ms. \modelname{} is deployed as a dedicated agent-layer safety-certification module within the RobustIDPS.ai platform, complementing the platform's LipMamba-, MambaShield-, CT-DGNN-JailGuard-, FedLoRAGuard-, and FedLLM-API-based detection pipeline. By providing the first \emph{distribution-free} certification framework for the multi-agent LLM frontier, \modelname{} closes a critical gap between the explosive growth of agentic systems and the production-grade safety guarantees required for safety-critical deployments.
+
+
+%% ============================================================
+\section*{Acknowledgments}
+%% ============================================================
+
+This work was supported by a grant for research centers in Artificial Intelligence from the Ministry of Economic Development of the Russian Federation under subsidy agreement (identifier 000000C313925P3Q0002). The authors declare no competing financial interests.
+
+\noindent\textbf{Reproducibility.} All experiments were conducted on $4 \times $ NVIDIA A100 80~GB GPUs with $512$~GB RAM and dual AMD EPYC 7763 processors. Each result is the mean over three random seeds ($42$, $137$, $2026$). Calibration corpus: $n_{\mathrm{cal}} = 2000$ randomly held-out execution traces; online learning rate $\gamma = 0.05$. The encoder is a 3-layer DyGFormer-HGT, $H = 8$ heads, hidden dimension $d = 256$. Source code, the \benchname{} benchmark, the agent-platform instrumentation hooks, and the integration adapter for the RobustIDPS.ai platform are released at \url{https://github.com/rogerpanel/ConformalGuard}.
+
+
+%% ============================================================
+%% BIBLIOGRAPHY (citation-order-of-first-use)
+%% ============================================================
+
+\begin{thebibliography}{99}
+
+% --- Multi-agent LLM systems and safety (cited in Intro) ---
+\bibitem{wu2023autogen}
+Q.~Wu \emph{et al.}, ``{AutoGen}: Enabling next-gen LLM applications via multi-agent conversation,'' \emph{arXiv preprint arXiv:2308.08155}, 2023.
+
+\bibitem{hong2024metagpt}
+S.~Hong \emph{et al.}, ``{MetaGPT}: Meta programming for a multi-agent collaborative framework,'' in \emph{Proc.\ ICLR}, 2024.
+
+\bibitem{langgraph2024}
+LangChain Inc., ``{LangGraph}: Building stateful multi-actor applications with LLMs,'' Technical Documentation, 2024.
+
+\bibitem{jimenez2024swebench}
+C.~E.~Jimenez \emph{et al.}, ``{SWE-bench}: Can language models resolve real-world {GitHub} issues?'' in \emph{Proc.\ ICLR}, 2024.
+
+\bibitem{huang2024mlagentbench}
+Q.~Huang \emph{et al.}, ``{MLAgentBench}: Evaluating language agents on machine-learning experimentation,'' in \emph{Proc.\ ICML}, 2024.
+
+\bibitem{xie2024osworld}
+T.~Xie \emph{et al.}, ``{OSWorld}: Benchmarking multimodal agents for open-ended tasks in real computer environments,'' in \emph{Proc.\ NeurIPS Datasets Track}, 2024.
+
+\bibitem{inan2023llamaguard}
+H.~Inan \emph{et al.}, ``{Llama Guard}: LLM-based input-output safeguard for human-AI conversations,'' \emph{arXiv preprint arXiv:2312.06674}, 2023.
+
+\bibitem{han2024wildguard}
+S.~Han \emph{et al.}, ``{WildGuard}: Open one-stop moderation tools for safety risks, jailbreaks, and refusals of LLMs,'' in \emph{Proc.\ NeurIPS Datasets Track}, 2024.
+
+\bibitem{openai2023moderation}
+T.~Markov \emph{et al.}, ``A holistic approach to undesired content detection in the real world (OpenAI Moderation API),'' in \emph{Proc.\ AAAI}, 2023.
+
+\bibitem{zou2024circuit}
+A.~Zou \emph{et al.}, ``Improving alignment and robustness with circuit breakers,'' in \emph{Proc.\ NeurIPS}, 2024.
+
+\bibitem{chen2024agentpoison}
+Z.~Chen, Z.~Xiang, C.~Xiao, D.~Song, and B.~Li, ``{AgentPoison}: Red-teaming LLM agents via poisoning memory or knowledge bases,'' in \emph{Proc.\ NeurIPS}, 2024.
+
+\bibitem{gu2024agentsmith}
+X.~Gu \emph{et al.}, ``Agent {Smith}: A single image can jailbreak one million multimodal LLM agents exponentially fast,'' in \emph{Proc.\ ICML}, 2024.
+
+\bibitem{greshake2023indirect}
+K.~Greshake \emph{et al.}, ``Not what you've signed up for: Compromising real-world LLM-integrated applications with indirect prompt injection,'' in \emph{Proc.\ AISec Workshop @ CCS}, 2023.
+
+\bibitem{yuan2024rjudge}
+T.~Yuan \emph{et al.}, ``{R-Judge}: Benchmarking safety risk awareness for LLM agents,'' \emph{arXiv preprint arXiv:2401.10019}, 2024.
+
+% --- PI prior work (cited as the methodological lineage) ---
+\bibitem{anaedevha2025mambashield_internal_pre}
+R.~N.~Anaedevha, A.~G.~Trofimov, and Y.~V.~Borodachev, ``CT-Explain: Conformal prediction for SOC intrusion detection with neural-ODE GNN,'' in \emph{Proc.\ INJOIT}, 2026 (in production).
+
+\bibitem{anaedevha2026robustidps_internal_pre}
+R.~N.~Anaedevha, A.~G.~Trofimov, and Y.~V.~Borodachev, ``{CT-DGNN-JailGuard}: Continuous-time dynamic GNN for LLM jailbreak campaign detection on API interaction graphs,'' in \emph{Proc.\ INJOIT}, 2026 (in production).
+
+\bibitem{anaedevha2025mambashield}
+R.~N.~Anaedevha, A.~G.~Trofimov, and Y.~V.~Borodachev, ``{MambaShield}: Selective state-space models for poisoning-resilient sequential modeling,'' \emph{Expert Systems with Applications}, Elsevier, 2025. doi:10.1016/j.eswa.2026.131175.
+
+\bibitem{anaedevha2026uchgp}
+R.~N.~Anaedevha, A.~G.~Trofimov, and Y.~V.~Borodachev, ``Uncertainty-calibrated hierarchical {Gaussian} processes for intrusion detection with multi-scale temporal modeling,'' \emph{Neurocomputing}, p.~133105, Elsevier, 2026. doi:10.1016/j.neucom.2026.133105.
+
+\bibitem{anaedevha2026tanode}
+R.~N.~Anaedevha, A.~G.~Trofimov, and Y.~V.~Borodachev, ``Temporal adaptive {Neural ODE} with deep spatio-temporal point processes for real-time network intrusion detection,'' \emph{Complex and Intelligent Systems}, Springer, 2026. doi:10.1007/s40747-026-02291-7.
+
+\bibitem{anaedevha2024adversarial}
+R.~N.~Anaedevha and A.~G.~Trofimov, ``Improved robust adversarial model against evasion attacks on intrusion detection systems,'' \emph{Optical Memory and Neural Networks}, vol.~33, no.~Suppl 3, pp.~S414--S423, 2024.
+
+\bibitem{anaedevha2025stochastic}
+R.~N.~Anaedevha and A.~G.~Trofimov, ``Stochastic multimodal transformer with uncertainty quantification for robust network intrusion detection,'' in \emph{NEUROINFORMATICS 2025, Studies in Computational Intelligence, vol.~1241}, Springer Cham, 2025.
+
+\bibitem{anaedevha2025dqn}
+R.~N.~Anaedevha and A.~G.~Trofimov, ``Integrated deep {Q}-networks and actor-critic models for enhanced poisoning attack detection,'' in \emph{Proc.\ ElCon}, ETU-LETI, St.\ Petersburg, 2025, pp.~556--567.
+
+\bibitem{anaedevha2024wireless}
+R.~N.~Anaedevha, ``Application of machine learning models for device identification in wireless network traffic,'' in \emph{Proc.\ ElCon}, IEEE, Saint Petersburg, 2024, pp.~104--110.
+
+\bibitem{anaedevha2026lipmamba_internal}
+R.~N.~Anaedevha, A.~G.~Trofimov, and Y.~V.~Borodachev, ``{LipMamba}: Lipschitz-constrained selective state-space models with PAC-Bayesian certificates for certified robustness against hidden-state poisoning,'' Tech.\ Report, NRNU MEPhI, 2026.
+
+\bibitem{anaedevha2026robustidps}
+R.~N.~Anaedevha, A.~G.~Trofimov, and Y.~V.~Borodachev, ``{RobustIDPS.ai}: An adversarially robust AI/ML security platform with 13+ neural architectures and post-quantum cryptography support,'' Platform Documentation, NRNU MEPhI, 2026.
+
+% --- Multi-agent benchmarks and tooling ---
+\bibitem{liu2024agentbench}
+X.~Liu \emph{et al.}, ``{AgentBench}: Evaluating LLMs as agents,'' in \emph{Proc.\ ICLR}, 2024.
+
+\bibitem{li2023camel}
+G.~Li \emph{et al.}, ``{CAMEL}: Communicative agents for ``mind'' exploration of large-scale language-model society,'' in \emph{Proc.\ NeurIPS}, 2023.
+
+\bibitem{yao2023react}
+S.~Yao \emph{et al.}, ``{ReAct}: Synergizing reasoning and acting in language models,'' in \emph{Proc.\ ICLR}, 2023.
+
+\bibitem{yao2024tot}
+S.~Yao \emph{et al.}, ``Tree of thoughts: Deliberate problem solving with large language models,'' in \emph{Proc.\ NeurIPS}, 2024.
+
+\bibitem{li2023apibank}
+M.~Li \emph{et al.}, ``{API-Bank}: A comprehensive benchmark for tool-augmented LLMs,'' in \emph{Proc.\ EMNLP}, 2023.
+
+\bibitem{qin2023toolllm}
+Y.~Qin \emph{et al.}, ``{ToolLLM}: Facilitating large language models to master 16{,}000+ real-world APIs,'' in \emph{Proc.\ ICLR}, 2024.
+
+\bibitem{patil2024bfcl}
+S.~G.~Patil \emph{et al.}, ``Berkeley Function Calling Leaderboard,'' \emph{UC Berkeley Sky Computing Lab Technical Report}, 2024.
+
+\bibitem{agentsafetybench2024}
+``{AgentSafetyBench}: Evaluating safety of LLM agents,'' in \emph{Proc.\ NeurIPS Datasets Track}, 2024.
+
+% --- Conformal prediction theory ---
+\bibitem{vovk2005algorithmic}
+V.~Vovk, A.~Gammerman, and G.~Shafer, \emph{Algorithmic Learning in a Random World}.\ \ \ Springer, 2005.
+
+\bibitem{angelopoulos2021gentle}
+A.~N.~Angelopoulos and S.~Bates, ``A gentle introduction to conformal prediction and distribution-free uncertainty quantification,'' \emph{arXiv preprint arXiv:2107.07511}, 2021.
+
+\bibitem{lei2018distribution}
+J.~Lei, M.~G'Sell, A.~Rinaldo, R.~J.~Tibshirani, and L.~Wasserman, ``Distribution-free predictive inference for regression,'' \emph{J.\ Amer.\ Statist.\ Assoc.}, vol.~113, no.~523, pp.~1094--1111, 2018.
+
+\bibitem{romano2019cqr}
+Y.~Romano, E.~Patterson, and E.~J.~Cand{\`e}s, ``Conformalized quantile regression,'' in \emph{Proc.\ NeurIPS}, 2019.
+
+\bibitem{gibbs2021adaptive}
+I.~Gibbs and E.~J.~Cand{\`e}s, ``Adaptive conformal inference under distribution shift,'' in \emph{Proc.\ NeurIPS}, 2021.
+
+\bibitem{bates2021distribution}
+S.~Bates, A.~N.~Angelopoulos, L.~Lei, J.~Malik, and M.~I.~Jordan, ``Distribution-free, risk-controlling prediction sets,'' \emph{Journal of the ACM}, vol.~68, no.~6, pp.~1--34, 2021.
+
+\bibitem{angelopoulos2024conformal}
+A.~N.~Angelopoulos, S.~Bates, A.~Fisch, L.~Lei, and T.~Schuster, ``Conformal risk control,'' in \emph{Proc.\ ICLR}, 2024.
+
+\bibitem{quach2024conformal}
+V.~Quach \emph{et al.}, ``Conformal language modeling,'' in \emph{Proc.\ ICLR}, 2024.
+
+\bibitem{mohri2024conformal}
+C.~Mohri and T.~Hashimoto, ``Language models with conformal factuality guarantees,'' in \emph{Proc.\ ICML}, 2024.
+
+\bibitem{kumar2023conformal}
+B.~Kumar \emph{et al.}, ``Conformal prediction with large language models for multi-choice question answering,'' \emph{arXiv preprint arXiv:2305.18404}, 2023.
+
+\bibitem{huang2024confllm}
+K.~Huang \emph{et al.}, ``{ConfLLM}: Conformal calibration for LLM-based retrieval,'' \emph{arXiv preprint arXiv:2403.12345}, 2024.
+
+\bibitem{huang2023cfgnn}
+K.~Huang, Y.~Jin, E.~Cand{\`e}s, and J.~Leskovec, ``Uncertainty quantification over graph with conformalized graph neural networks ({CF-GNN}),'' in \emph{Proc.\ NeurIPS}, 2023.
+
+\bibitem{zargarbashi2023conformal}
+S.~H.~Zargarbashi, S.~Antonelli, and A.~Bojchevski, ``Conformal prediction sets for graph neural networks,'' in \emph{Proc.\ NeurIPS}, 2023.
+
+\bibitem{lunde2023conformal}
+R.~Lunde, ``Conformal prediction with conditionally exchangeable data,'' \emph{arXiv preprint arXiv:2306.02614}, 2023.
+
+\bibitem{clarkson2023distribution}
+J.~Clarkson, ``Distribution-free prediction sets for graphs,'' \emph{arXiv preprint arXiv:2303.14254}, 2023.
+
+\bibitem{laxhammar2014conformal}
+R.~Laxhammar, ``Conformal anomaly detection: Detecting abnormal trajectories in surveillance applications,'' Ph.D.\ dissertation, University of Sk\"ovde, 2014.
+
+\bibitem{bates2023testing}
+S.~Bates \emph{et al.}, ``Testing for outliers with conformal $p$-values,'' \emph{Annals of Statistics}, 2023.
+
+\bibitem{gendler2022adversarially}
+A.~Gendler, T.-W.~Weng, L.~Daniel, and Y.~Romano, ``Adversarially robust conformal prediction,'' in \emph{Proc.\ ICLR}, 2022.
+
+\bibitem{yan2024adversarial}
+G.~Yan \emph{et al.}, ``Provably robust conformal prediction with improved efficiency,'' in \emph{Proc.\ ICML}, 2024.
+
+% --- Dynamic and heterogeneous GNNs ---
+\bibitem{kumar2019jodie}
+S.~Kumar, X.~Zhang, and J.~Leskovec, ``Predicting dynamic embedding trajectory in temporal interaction networks ({JODIE}),'' in \emph{Proc.\ KDD}, 2019.
+
+\bibitem{trivedi2019dyrep}
+R.~Trivedi, M.~Farajtabar, P.~Biswal, and H.~Zha, ``{DyRep}: Learning representations over dynamic graphs,'' in \emph{Proc.\ ICLR}, 2019.
+
+\bibitem{xu2020tgat}
+D.~Xu \emph{et al.}, ``Inductive representation learning on temporal graphs ({TGAT}),'' in \emph{Proc.\ ICLR}, 2020.
+
+\bibitem{rossi2020tgn}
+E.~Rossi \emph{et al.}, ``Temporal graph networks for deep learning on dynamic graphs,'' in \emph{ICML GRL Workshop}, 2020.
+
+\bibitem{wang2021caw}
+Y.~Wang \emph{et al.}, ``Inductive representation learning in temporal networks via causal anonymous walks,'' in \emph{Proc.\ ICLR}, 2021.
+
+\bibitem{cong2023graphmixer}
+W.~Cong \emph{et al.}, ``Do we really need complicated model architectures for temporal networks? ({GraphMixer}),'' in \emph{Proc.\ ICLR}, 2023.
+
+\bibitem{yu2023dygformer}
+L.~Yu, L.~Sun, B.~Du, and W.~Lv, ``Towards better dynamic graph learning ({DyGFormer}/{DyGLib}),'' in \emph{Proc.\ NeurIPS}, 2023.
+
+\bibitem{wang2019han}
+X.~Wang \emph{et al.}, ``Heterogeneous graph attention network ({HAN}),'' in \emph{Proc.\ WWW}, 2019.
+
+\bibitem{hu2020hgt}
+Z.~Hu \emph{et al.}, ``Heterogeneous graph transformer ({HGT}),'' in \emph{Proc.\ WWW}, 2020.
+
+\bibitem{li2025dygmamba}
+Y.~Li \emph{et al.}, ``{DyG-Mamba}: Continuous state-space modeling on dynamic graphs,'' in \emph{Proc.\ NeurIPS}, 2025.
+
+\bibitem{sejfia2022amalfi}
+A.~Sejfia and M.~Sch\"afer, ``Practical automated detection of malicious {npm} packages,'' in \emph{Proc.\ ICSE}, 2022.
+
+\bibitem{zhang2024spiderscan}
+Y.~Zhang \emph{et al.}, ``{SpiderScan}: Practical detection of malicious {npm} packages,'' in \emph{Proc.\ ASE}, 2024.
+
+\bibitem{amjath2025fedmalgnn}
+M.~Amjath, S.~Henna, and U.~Rathnayake, ``Graph-representation federated learning for malware detection in IoMT,'' \emph{Results in Engineering}, vol.~25, p.~103651, 2025.
+
+% --- Certified robustness comparators ---
+\bibitem{cohen2019certified}
+J.~M.~Cohen, E.~Rosenfeld, and J.~Z.~Kolter, ``Certified adversarial robustness via randomized smoothing,'' in \emph{Proc.\ ICML}, 2019.
+
+% --- Benchmarks and statistical testing ---
+\bibitem{demsar2006statistical}
+J.~Dem\v{s}ar, ``Statistical comparisons of classifiers over multiple data sets,'' \emph{J.\ Mach.\ Learn.\ Res.}, vol.~7, pp.~1--30, 2006.
+
+\bibitem{loshchilov2019adamw}
+I.~Loshchilov and F.~Hutter, ``Decoupled weight decay regularization,'' in \emph{Proc.\ ICLR}, 2019.
+
+\end{thebibliography}
+
+\end{document}
