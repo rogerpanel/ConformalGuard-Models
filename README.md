@@ -1,6 +1,6 @@
 # ConformalGuard: supplementary code and results
 
-Everything in the paper can be regenerated from this package.
+Everything in the paper "ConformalGuard: Distribution-Free False-Block Guarantees for Multi-Agent LLM Systems via Conformal Prediction on Dynamic Execution Graphs", can be regenerated from this package.
 
 | Paper | Command | Notes |
 |---|---|---|
