@@ -22,11 +22,12 @@ Under exchangeability + a continuity assumption on s,
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 
 import numpy as np
 import torch
+
+from conformalguard.conformal.core import conformal_quantile, conformal_rank
 
 from conformalguard.conformal.nonconformity import NegLogProbScore, NonconformityScore
 
@@ -83,10 +84,11 @@ class ConformalCalibrator:
             raise ValueError("n_cal mismatch between logits and y")
 
         scores = self.score(logits, y).detach().cpu().numpy()
-        # Finite-sample quantile level (Vovk/Lei): ⌈(n+1)(1-α)⌉ / n.
-        q_level = math.ceil((n + 1) * (1 - self.alpha)) / n
-        q_level = min(q_level, 1.0)
-        tau = float(np.quantile(scores, q_level, method="higher"))
+        # Exact order statistic: the ⌈(n+1)(1-α)⌉-th smallest score (+inf if
+        # that rank exceeds n).  np.quantile(..., method="higher") at level
+        # k/n returns the (k+1)-th smallest and is off by one rank.
+        tau = conformal_quantile(scores, self.alpha)
+        q_level = min(conformal_rank(n, self.alpha) / n, 1.0)
 
         self.threshold_ = tau
         self.n_ = n

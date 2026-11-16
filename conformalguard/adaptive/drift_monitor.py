@@ -4,8 +4,8 @@ Tracks rolling statistics on nonconformity scores and triggers a
 "recalibration warning" when the empirical CDF on a sliding window deviates
 from the calibration distribution under a Kolmogorov–Smirnov test.
 
-This is the same pattern used by RobustIDPS for the SurrogateIDS continual-
-learning module — we share the API with `integrated_ai_ids/core/drift.py`.
+This is the same pattern used by the host platform for the SurrogateIDS continual-
+learning module — we share the API with `host_platform/core/drift.py`.
 """
 
 from __future__ import annotations

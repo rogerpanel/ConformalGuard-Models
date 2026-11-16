@@ -29,14 +29,27 @@ def test_quantile_level_correctness():
 
 
 def test_marginal_coverage_in_envelope():
-    logits, y = _synthetic_logits(2000, 12)
-    cal = ConformalCalibrator(alpha=0.10)
-    cal.calibrate(logits, y)
-    test_logits, test_y = _synthetic_logits(2000, 12, seed=1)
-    sets = cal.predict_set(test_logits)
-    in_set = np.array([int(int(test_y[i]) in s) for i, s in enumerate(sets)])
-    cov = evaluate_coverage(in_set, n_cal=2000, alpha=0.10, tolerance=0.02)
-    assert cov.in_envelope, cov
+    """Coverage is marginal over the joint draw of calibration and test data,
+    so it is checked as an average over independent draws, not on one draw."""
+    covs = []
+    for seed in range(20):
+        logits, y = _synthetic_logits(2000, 12, seed=2 * seed)
+        cal = ConformalCalibrator(alpha=0.10)
+        cal.calibrate(logits, y)
+        test_logits, test_y = _synthetic_logits(2000, 12, seed=2 * seed + 1)
+        sets = cal.predict_set(test_logits)
+        covs.append(np.mean([int(test_y[i]) in s for i, s in enumerate(sets)]))
+    cov = evaluate_coverage(np.array(covs), n_cal=2000, alpha=0.10, tolerance=0.01)
+    assert 0.89 <= float(np.mean(covs)) <= 0.9005 + 0.01, covs
+    assert cov.lower_bound == 0.9
+
+
+def test_threshold_is_exact_order_statistic():
+    logits, y = _synthetic_logits(999, 12)
+    cal = ConformalCalibrator(alpha=0.05)
+    res = cal.calibrate(logits, y)
+    scores = np.sort(NegLogProbScore()(logits, y).numpy().astype(np.float64))
+    assert res.threshold == scores[950 - 1]      # ceil(1000 * 0.95) = 950
 
 
 def test_neg_log_prob_score_matches_loss():

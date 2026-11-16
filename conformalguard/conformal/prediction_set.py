@@ -2,7 +2,7 @@
 
 A `PredictionSet` is the user-facing object returned at inference time. It
 contains the candidate safe-action ids, their scores, the calibration
-threshold, and a verdict that the deployment server / RobustIDPS plugin can
+threshold, and a verdict that the deployment server / the host platform plugin can
 act on.
 """
 

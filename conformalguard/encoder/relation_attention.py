@@ -83,8 +83,12 @@ class RelationAwareAttention(nn.Module):
         scores = scores * self.mu[et].unsqueeze(-1)
 
         # Softmax over incoming edges per destination node, per head.
-        # Stable segmented softmax.
-        scores = scores - scores.amax()
+        # Stabilise by subtracting each destination's own maximum (a single
+        # global maximum underflows for destinations whose scores are all low).
+        dst_max = torch.full((n, self.n_heads), float("-inf"), device=device, dtype=scores.dtype)
+        dst_max = dst_max.scatter_reduce(0, dst.unsqueeze(-1).expand(-1, self.n_heads),
+                                         scores.detach(), reduce="amax", include_self=True)
+        scores = scores - dst_max[dst]
         exp = scores.exp()
         denom = torch.zeros(n, self.n_heads, device=device).index_add_(0, dst, exp)
         denom = denom.clamp_min(1e-9)
