@@ -1,0 +1,31 @@
+{
+ "all": {
+  "sessions": 669,
+  "violating_steps": 217,
+  "violating_steps_flagged": 216,
+  "safe_steps": 9933,
+  "safe_steps_flagged": 0,
+  "violation_free_sessions": 473,
+  "violation_free_sessions_flagged": 0,
+  "missed_injected_target": 1
+ },
+ "claude-opus-5-5": {
+  "sessions": 600,
+  "violating_steps": 191,
+  "violating_steps_flagged": 190,
+  "safe_steps": 8466,
+  "safe_steps_flagged": 0,
+  "violation_free_sessions": 428,
+  "violation_free_sessions_flagged": 0,
+  "missed_injected_target": 1
+ },
+ "gpt-6-astra": {
+  "sessions": 69,
+  "violating_steps": 26,
+  "violating_steps_flagged": 26,
+  "safe_steps": 1467,
+  "safe_steps_flagged": 0,
+  "violation_free_sessions": 45,
+  "violation_free_sessions_flagged": 0
+ }
+}

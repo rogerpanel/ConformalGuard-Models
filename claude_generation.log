@@ -1,0 +1,38 @@
+probe: model claude-opus-5-5, structured output on: 0 of 40 agent steps refused  -> accepted
+0 sessions already in runs/mas_claude/sessions.jsonl, 600 to go
+  20 sessions written
+  40 sessions written
+  60 sessions written
+  80 sessions written
+  100 sessions written
+  120 sessions written
+  140 sessions written
+  160 sessions written
+  180 sessions written
+  200 sessions written
+  220 sessions written
+  240 sessions written
+  260 sessions written
+  280 sessions written
+  300 sessions written
+  320 sessions written
+  340 sessions written
+  360 sessions written
+  380 sessions written
+  400 sessions written
+  420 sessions written
+  440 sessions written
+  460 sessions written
+  480 sessions written
+  500 sessions written
+  520 sessions written
+  540 sessions written
+  560 sessions written
+  580 sessions written
+  600 sessions written
+done: 600 sessions written this run, 0 failed (rerun to retry); file runs/mas_claude/sessions.jsonl
+usage: 600 sessions; per session: calls 15, input_tokens 87, output_tokens 3,365, cache_read_input_tokens 11,303, cache_creation_input_tokens 8,665; refused steps in total: 0
+using the configuration saved in runs/mas_claude/config.json: {'model': 'claude-opus-5-5', 'schema': True, 'fallbacks': True}
+600 sessions already in runs/mas_claude/sessions.jsonl, 0 to go
+done: 0 sessions written this run, 0 failed (rerun to retry); file runs/mas_claude/sessions.jsonl
+usage: 600 sessions; per session: calls 15, input_tokens 87, output_tokens 3,365, cache_read_input_tokens 11,303, cache_creation_input_tokens 8,665; refused steps in total: 0

@@ -1,0 +1,23 @@
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+runs/
+*.pt
+*.npy
+.cache/
+.venv/
+.env
+
+# Local manuscript drafts
+paper/
+rebuttal/
+runs_trial/

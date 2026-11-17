@@ -1,0 +1,19 @@
+{
+ "chosen": {
+  "model": "claude-opus-5-5",
+  "schema": true,
+  "fallbacks": true
+ },
+ "probe": [
+  {
+   "model": "claude-opus-5-5",
+   "schema": true,
+   "fallbacks": true,
+   "agent_steps": 40,
+   "refused": 0,
+   "categories": {},
+   "error": null,
+   "accepted": true
+  }
+ ]
+}

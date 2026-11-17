@@ -1,0 +1,9 @@
+0 sessions already in runs/mas_openai/sessions.jsonl, 69 to go
+  20 sessions written
+  40 sessions written
+  60 sessions written
+done: 69 sessions written this run, 0 failed (rerun to retry); file runs/mas_openai/sessions.jsonl
+usage: 69 sessions; per session: calls 22, input_tokens 16,609, output_tokens 2,612; refused steps in total: 0
+69 sessions already in runs/mas_openai/sessions.jsonl, 0 to go
+done: 0 sessions written this run, 0 failed (rerun to retry); file runs/mas_openai/sessions.jsonl
+usage: 69 sessions; per session: calls 22, input_tokens 16,609, output_tokens 2,612; refused steps in total: 0

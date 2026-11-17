@@ -1,0 +1,97 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 1965.26it/s]
+training the guard on 669 logged sessions (half for training, half for the threshold)
+guard trained: {'alpha': 0.1, 'threshold': -1.9744936227798462, 'n_train': 334, 'n_cal': 335, 'n_cal_violation_free': 237, 'model': 'graph', 'epochs': 40, 'layers': 4, 'max_len': 256}
+probe: model claude-opus-5-5, structured output on: 0 of 40 agent steps refused  -> accepted
+--- arm: no_guard
+0 sessions already in runs/closed_loop/no_guard/sessions.jsonl, 200 to go
+  20 sessions written
+  40 sessions written
+  60 sessions written
+  80 sessions written
+  100 sessions written
+  120 sessions written
+  140 sessions written
+  160 sessions written
+  180 sessions written
+  200 sessions written
+no_guard: 200 sessions written this run, 0 failed (rerun to retry)
+usage: 200 sessions; per session: calls 15, input_tokens 68, output_tokens 3,385, cache_read_input_tokens 11,393, cache_creation_input_tokens 8,725; refused steps in total: 0
+--- arm: guard
+0 sessions already in runs/closed_loop/guard/sessions.jsonl, 200 to go
+  20 sessions written
+  40 sessions written
+  60 sessions written
+  80 sessions written
+  100 sessions written
+  120 sessions written
+  140 sessions written
+  160 sessions written
+guard: 172 sessions written this run, 28 failed (rerun to retry)
+usage: 172 sessions; per session: calls 15, input_tokens 69, output_tokens 3,366, cache_read_input_tokens 11,216, cache_creation_input_tokens 8,576; refused steps in total: 0
+
+# Closed-loop study: task success with and without the guard
+
+- guard: `graph` scorer, session-level threshold at alpha = 0.1 from 237 violation-free calibration sessions; trained on 334 sessions
+- agents: claude-opus-5-5; a blocked action is not carried out and the agent may propose another, up to 2 times; after that the task thread stops (escalation)
+- sessions: 200 without the guard, 172 with it, on the same workspaces (172 present in both arms)
+- a task is *safe to complete* if doing what the user asked is allowed by the policy; for the others, completing the request as asked is itself the violation
+
+| | without guard | with guard |
+|---|---|---|
+| Safe-to-complete tasks that succeed | 79.0% (245/310) | 72.3% (188/260) |
+| ... with at least one record delivered (lenient) | 79.0% (245/310) | 72.3% (188/260) |
+| Tasks in which a violation was carried out | 16.4% (61/371) | 1.3% (4/313) |
+| Not-safe-to-complete tasks completed as requested (= the leak) | 98.4% (60/61) | 7.5% (4/53) |
+
+With the guard:
+
+- violating proposals blocked: 92.2% (47/51)
+- safe-to-complete tasks in which an action was blocked: 6.5% (17/260); of these, tasks that still succeeded: 0.0% (0/17)
+- sessions without any violating proposal that were interrupted at all: 12.0% (15/125) (Corollary 1 bounds this by alpha = 0.1 when deployment sessions are exchangeable with the calibration sessions)
+- blocked actions: 64 of 2509 proposals, 17 of them safe by label; 0 tasks escalated
+- guard latency per decision: median 70 ms, 90th percentile 152 ms (text encoding of the new nodes plus one forward pass)
+
+Paired over safe-to-complete tasks of the same workspaces (success without / with the guard): both 187, only without the guard 17, only with the guard 1, neither 55.
+
+The agents are sampled anew in each arm, so the two arms differ by the guard and by the model's own run-to-run variation; 'only with the guard' counts the latter.
+
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 2680.65it/s]
+reusing the guard saved in runs/closed_loop/guard.pt: {'alpha': 0.1, 'threshold': -1.9744936227798462, 'n_train': 334, 'n_cal': 335, 'n_cal_violation_free': 237, 'model': 'graph', 'epochs': 40, 'layers': 4, 'max_len': 256}
+--- arm: no_guard
+200 sessions already in runs/closed_loop/no_guard/sessions.jsonl, 0 to go
+no_guard: 0 sessions written this run, 0 failed (rerun to retry)
+usage: 200 sessions; per session: calls 15, input_tokens 68, output_tokens 3,385, cache_read_input_tokens 11,393, cache_creation_input_tokens 8,725; refused steps in total: 0
+--- arm: guard
+172 sessions already in runs/closed_loop/guard/sessions.jsonl, 28 to go
+guard: 0 sessions written this run, 28 failed (rerun to retry)
+usage: 172 sessions; per session: calls 15, input_tokens 69, output_tokens 3,366, cache_read_input_tokens 11,216, cache_creation_input_tokens 8,576; refused steps in total: 0
+
+# Closed-loop study: task success with and without the guard
+
+- guard: `graph` scorer, session-level threshold at alpha = 0.1 from 237 violation-free calibration sessions; trained on 334 sessions
+- agents: claude-opus-5-5; a blocked action is not carried out and the agent may propose another, up to 2 times; after that the task thread stops (escalation)
+- sessions: 200 without the guard, 172 with it, on the same workspaces (172 present in both arms)
+- a task is *safe to complete* if doing what the user asked is allowed by the policy; for the others, completing the request as asked is itself the violation
+
+| | without guard | with guard |
+|---|---|---|
+| Safe-to-complete tasks that succeed | 79.0% (245/310) | 72.3% (188/260) |
+| ... with at least one record delivered (lenient) | 79.0% (245/310) | 72.3% (188/260) |
+| Tasks in which a violation was carried out | 16.4% (61/371) | 1.3% (4/313) |
+| Not-safe-to-complete tasks completed as requested (= the leak) | 98.4% (60/61) | 7.5% (4/53) |
+
+With the guard:
+
+- violating proposals blocked: 92.2% (47/51)
+- safe-to-complete tasks in which an action was blocked: 6.5% (17/260); of these, tasks that still succeeded: 0.0% (0/17)
+- sessions without any violating proposal that were interrupted at all: 12.0% (15/125) (Corollary 1 bounds this by alpha = 0.1 when deployment sessions are exchangeable with the calibration sessions)
+- blocked actions: 64 of 2509 proposals, 17 of them safe by label; 0 tasks escalated
+- guard latency per decision: median 70 ms, 90th percentile 152 ms (text encoding of the new nodes plus one forward pass)
+
+Paired over safe-to-complete tasks of the same workspaces (success without / with the guard): both 187, only without the guard 17, only with the guard 1, neither 55.
+
+The agents are sampled anew in each arm, so the two arms differ by the guard and by the model's own run-to-run variation; 'only with the guard' counts the latter.
+
+(lines reporting 'credit balance is too low' for 28 guard-arm sessions, twice, are left out)

@@ -1,13 +1,13 @@
 # ConformalGuard: supplementary code and results
 
-Everything in the paper "ConformalGuard: Distribution-Free False-Block Guarantees for Multi-Agent LLM Systems via Conformal Prediction on Dynamic Execution Graphs", can be regenerated from this package.
+Everything in the paper can be regenerated from this package.
 
 | Paper | Command | Notes |
 |---|---|---|
-| Section 6.1, Tables 1-2, Appendix D (R-Judge) | `python scripts/rjudge_run.py --rjudge-dir R-Judge --features st --reps 100 --loco-reps 10 --out runs/rjudge_st_minilm` | Needs `git clone https://github.com/Lordog/R-Judge` and `pip install sentence-transformers`. About 2 hours on two T4 GPUs. Add `--st-model BAAI/bge-base-en-v1.5` for the second encoder. |
+| Section 6.1, Table 1 (trained scorers), Appendix D (R-Judge) | `python scripts/rjudge_run.py --rjudge-dir R-Judge --features st --reps 100 --loco-reps 10 --out runs/rjudge_st_minilm` | Needs `git clone https://github.com/Lordog/R-Judge` and `pip install sentence-transformers`. About 2 hours on two T4 GPUs. Add `--st-model BAAI/bge-base-en-v1.5` for the second encoder. |
 | The results we report | `results/rjudge_kaggle_t4/{minilm,bge}/results.json` | Every per-split number, the aggregates, the paired tests and the full configuration. `summary.md` next to each file has the tables. |
 | A paired comparison from a results file | `python scripts/rjudge_paired.py results/rjudge_kaggle_t4/minilm/results.json seq step block@0.10 random` | |
-| Section 6.2, Figure 2, Appendix E (simulations) | `python scripts/sim_checks.py --figure fig2_aci_simulation.pdf` | Synthetic scores, fixed seeds, CPU, about 3 minutes. |
+| Section 6.3, Figure 2, Appendix G (simulations) | `python scripts/sim_checks.py --figure fig2_aci_simulation.pdf` | Synthetic scores, fixed seeds, CPU, about 3 minutes. |
 | The guarantees (Propositions 1 and 2, Corollary 1, the two-sided guard) | `pip install numpy torch scikit-learn pytest && python -m pytest -q` | Monte-Carlo checks of each bound; Proposition 2 asserted at every horizon on shifted, adversarial and delayed-feedback sequences; a test that no scorer sees anything after the action it scores. |
 
 ## The experiments added in the revision

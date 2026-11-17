@@ -1,0 +1,184 @@
+{
+ "claude": {
+  "fbr_session@0.05": {
+   "mean": 0.033663551401869156,
+   "sd": 0.028325571753922838
+  },
+  "block_session@0.05": {
+   "mean": 0.9904592697427766,
+   "sd": 0.009831319787673126
+  },
+  "block_session_single@0.05": {
+   "mean": 1.0,
+   "sd": 0.0
+  },
+  "block_session_concurrent@0.05": {
+   "mean": 0.9885474176938217,
+   "sd": 0.011830974047937265
+  },
+  "fbr@0.05": {
+   "mean": 0.040543046357615894,
+   "sd": 0.019615019055038083
+  },
+  "block@0.05": {
+   "mean": 0.9865487324696509,
+   "sd": 0.01974368662108521
+  },
+  "fbr_session@0.10": {
+   "mean": 0.06527102803738317,
+   "sd": 0.029220063097926314
+  },
+  "block_session@0.10": {
+   "mean": 0.9904592697427766,
+   "sd": 0.009831319787673126
+  },
+  "block_session_single@0.10": {
+   "mean": 1.0,
+   "sd": 0.0
+  },
+  "block_session_concurrent@0.10": {
+   "mean": 0.9885474176938217,
+   "sd": 0.011830974047937265
+  },
+  "fbr@0.10": {
+   "mean": 0.07580132450331124,
+   "sd": 0.026654689602077036
+  },
+  "block@0.10": {
+   "mean": 0.9904592697427766,
+   "sd": 0.009831319787673126
+  },
+  "fbr_session@0.20": {
+   "mean": 0.15037383177570093,
+   "sd": 0.024470301076341135
+  },
+  "block_session@0.20": {
+   "mean": 0.9904592697427766,
+   "sd": 0.009831319787673126
+  },
+  "block_session_single@0.20": {
+   "mean": 1.0,
+   "sd": 0.0
+  },
+  "block_session_concurrent@0.20": {
+   "mean": 0.9885474176938217,
+   "sd": 0.011830974047937265
+  },
+  "fbr@0.20": {
+   "mean": 0.13402649006622516,
+   "sd": 0.06451131295017196
+  },
+  "block@0.20": {
+   "mean": 0.9904592697427766,
+   "sd": 0.009831319787673126
+  },
+  "n_sessions": 300,
+  "n_violating_steps": 101,
+  "n_steps": 4847,
+  "unscored_steps": 0,
+  "guard": "claude-opus-5-5",
+  "decisions": 4847,
+  "seconds_median": 1.5245989069999837,
+  "seconds_p90": 1.976128392200053,
+  "tokens_per_decision": {
+   "input_tokens": 218.7493294821539,
+   "output_tokens": 9.548793067877037,
+   "cache_read_input_tokens": 0.26408087476789766,
+   "cache_creation_input_tokens": 2698.865896430782
+  },
+  "served_by_other_model": 56,
+  "refused": 0,
+  "usd_per_1000_decisions": 14.560355477615019,
+  "usd_per_1000_decisions_uncached": 11.862493088508357
+ },
+ "deepseek": {
+  "fbr_session@0.05": {
+   "mean": 0.0,
+   "sd": 0.0
+  },
+  "block_session@0.05": {
+   "mean": 0.0,
+   "sd": 0.0
+  },
+  "block_session_single@0.05": {
+   "mean": 0.0,
+   "sd": 0.0
+  },
+  "block_session_concurrent@0.05": {
+   "mean": 0.0,
+   "sd": 0.0
+  },
+  "fbr@0.05": {
+   "mean": 0.021072847682119207,
+   "sd": 0.01790223265017433
+  },
+  "block@0.05": {
+   "mean": 0.06086944423827733,
+   "sd": 0.13672763991109538
+  },
+  "fbr_session@0.10": {
+   "mean": 0.0,
+   "sd": 0.0
+  },
+  "block_session@0.10": {
+   "mean": 0.0,
+   "sd": 0.0
+  },
+  "block_session_single@0.10": {
+   "mean": 0.0,
+   "sd": 0.0
+  },
+  "block_session_concurrent@0.10": {
+   "mean": 0.0,
+   "sd": 0.0
+  },
+  "fbr@0.10": {
+   "mean": 0.0758543046357616,
+   "sd": 0.04859301166521832
+  },
+  "block@0.10": {
+   "mean": 0.6140712257061626,
+   "sd": 0.4438859115153861
+  },
+  "fbr_session@0.20": {
+   "mean": 0.010785046728971962,
+   "sd": 0.05757357099639033
+  },
+  "block_session@0.20": {
+   "mean": 0.0014783410903467984,
+   "sd": 0.008548204605951874
+  },
+  "block_session_single@0.20": {
+   "mean": 0.0,
+   "sd": 0.0
+  },
+  "block_session_concurrent@0.20": {
+   "mean": 0.0017370336157494898,
+   "sd": 0.010039937521569528
+  },
+  "fbr@0.20": {
+   "mean": 0.18490066225165566,
+   "sd": 0.04281917146221297
+  },
+  "block@0.20": {
+   "mean": 0.9803185072908582,
+   "sd": 0.013628044768183212
+  },
+  "n_sessions": 300,
+  "n_violating_steps": 101,
+  "n_steps": 4847,
+  "unscored_steps": 105,
+  "guard": "deepseek/deepseek-v3.2",
+  "decisions": 4847,
+  "seconds_median": 1.7186351760001344,
+  "seconds_p90": 8.222954852600033,
+  "tokens_per_decision": {
+   "input_tokens": 1784.5471425624098,
+   "output_tokens": 42.14297503610481,
+   "cache_read_input_tokens": 0.0,
+   "cache_creation_input_tokens": 0.0
+  },
+  "served_by_other_model": 0,
+  "refused": 0
+ }
+}
